@@ -10,6 +10,15 @@ tmp/
 .settings/
 .loadpath
 
+# NetBeans project files
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+nbactions.xml
+.nb-gradle/
+
 # Eclipse Core
 .project
 
