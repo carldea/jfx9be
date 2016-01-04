@@ -65,7 +65,15 @@ public class FormValidation extends Application {
         userNameCell.getChildren()
                     .add(userName);
 
-        // pad lock 
+        // When Label's text is wider than the background minus the padlock icon.
+        userNameCell.maxWidthProperty()
+                .bind(primaryStage.widthProperty()
+                        .subtract(45));
+        userNameCell.prefWidthProperty()
+                .bind(primaryStage.widthProperty()
+                        .subtract(45));
+
+        // padlock
         Region padlock = new Region();
         padlock.setId("padlock");
 
@@ -73,14 +81,6 @@ public class FormValidation extends Application {
         padLockCell.setId("padLockCell");
         HBox.setHgrow(padLockCell, Priority.ALWAYS);
         padLockCell.getChildren().add(padlock);
-
-        // When Label's text is wider than the background minus the padlock icon.
-        userNameCell.maxWidthProperty()
-                .bind(primaryStage.widthProperty()
-                                  .subtract(45));
-        userNameCell.prefWidthProperty()
-                .bind(primaryStage.widthProperty()
-                                  .subtract(45));
 
         // first row 
         HBox row1 = new HBox();
