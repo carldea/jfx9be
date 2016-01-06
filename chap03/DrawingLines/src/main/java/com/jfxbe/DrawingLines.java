@@ -62,14 +62,14 @@ public class DrawingLines extends Application {
         redLine.strokeDashOffsetProperty().bind(slider.valueProperty());
         root.getChildren().add(slider);
         
-        Text offsetText = new Text("Stroke Dash Offset: ");
+        Text offsetText = new Text("Stroke Dash Offset: " + slider.getValue());
         offsetText.setX(10);
         offsetText.setY(80);
         offsetText.setStroke(Color.WHITE);
         
         // display stroke dash offset value
         slider.valueProperty().addListener((ov, curVal, newVal) -> {
-            offsetText.setText("Stroke Dash Offset: " + slider.getValue());
+            offsetText.setText("Stroke Dash Offset: " + newVal );
         });
         root.getChildren().add(offsetText);
         
