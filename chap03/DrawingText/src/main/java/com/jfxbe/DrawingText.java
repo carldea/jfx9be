@@ -10,7 +10,6 @@ import javafx.stage.Stage;
 
 /** 
  * Drawing Text
- * DrawingText.java
  * @author carldea
  */
 public class DrawingText extends Application {
@@ -24,7 +23,7 @@ public class DrawingText extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("Chapter 2 Drawing Text");
+        primaryStage.setTitle("Drawing Text");
         Group root = new Group();
         Scene scene = new Scene(root, 300, 250, Color.WHITE);
         Random rand = new Random(System.currentTimeMillis());
@@ -35,7 +34,7 @@ public class DrawingText extends Application {
             int green = rand.nextInt(255);
             int blue = rand.nextInt(255);
 
-            Text text = new Text(x, y, "JavaFX 8");
+            Text text = new Text(x, y, "JavaFX 9");
 
             int rot = rand.nextInt(360);
             text.setFill(Color.rgb(red, green, blue, .99));

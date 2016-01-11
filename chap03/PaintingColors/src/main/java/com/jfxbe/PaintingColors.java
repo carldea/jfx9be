@@ -94,7 +94,7 @@ public class PaintingColors extends Application {
                     rectangle.getHeight() + 10);
  
         LinearGradient cycleGrad = new LinearGradient(
-                50, // start X 
+                50, // start X
                 50, // start Y
                 70, // end X
                 70, // end Y
