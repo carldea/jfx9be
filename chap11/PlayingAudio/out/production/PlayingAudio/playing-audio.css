@@ -1,0 +1,70 @@
+.root {
+    -white-ish: rgba(255, 255, 255, .90); 
+    -black-ish: rgba(0, 0, 0, .80);
+}
+
+#app-area {
+    -fx-background-color: -black-ish;
+    -fx-background-radius: 7;
+    -fx-background-insets: 2 2 2 2;
+
+    -fx-border-color: -white-ish;
+    -fx-border-style: solid;
+    -fx-border-insets: 6 6 6 6;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 5;
+    -fx-snap-to-pixel: false;
+}
+
+#button-area {
+    -fx-arc-width: 15;
+    -fx-arc-height: 20;
+    -fx-fill: -black-ish;
+    -fx-stroke: -white-ish;
+}
+
+#stop-button {
+    -fx-arc-width: 5;
+    -fx-arc-height: 5;
+    -fx-fill: -white-ish;
+    -fx-translate-x: 15;
+    -fx-translate-y: 10;
+    -fx-stroke: -white-ish;
+}
+
+#play-button {
+    -fx-fill: -white-ish;
+    -fx-translate-x: 40;    
+}
+
+.pause-circle {
+    -fx-stroke: -white-ish;
+    -fx-translate-x: 30;    
+}
+
+.pause-line {
+    -fx-stroke-width: 3;
+    -fx-stroke: -white-ish;
+    -fx-translate-y: 6;
+}
+
+.pause-line.first-line {
+    -fx-translate-x: 34;
+}
+
+.pause-line.second-line {
+    -fx-translate-x: 38;
+}
+
+#close-circle {
+    -fx-fill: -white-ish;
+}
+
+.slider {
+    -fx-show-tick-labels: false;
+    -fx-show-tick-marks: true;
+}
+
+.slider .axis .axis-label {
+    -fx-text-fill: white;
+}
