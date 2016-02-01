@@ -2,6 +2,8 @@ package com.jfxbe;
 
 import java.net.MalformedURLException;
 import javafx.application.*;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Point2D;
 import javafx.scene.*;
@@ -14,7 +16,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.shape.*;
-import javafx.scene.text.*;
 import javafx.stage.*;
 import javafx.util.Duration;
 
@@ -30,13 +31,7 @@ public class PlayingAudio extends Application {
    private Point2D previousLocation;
    private ChangeListener<Duration> progressListener;
    private Path chartArea = new Path();
-
-   private static final String STOP_BUTTON_ID = "stop-button";
-   private static final String PLAY_BUTTON_ID = "play-button";
-   private static final String PAUSE_BUTTON_ID = "pause-button";
-   private static final String CLOSE_BUTTON_ID = "close-button";
-   private static final String VIS_CONTAINER_ID = "viz-container";
-   private static final String SEEK_POS_SLIDER_ID = "seek-position-slider";
+   private BooleanProperty playAndPauseToggle = new SimpleBooleanProperty(true);
 
    /**
     * @param args the command line arguments
@@ -50,11 +45,11 @@ public class PlayingAudio extends Application {
       primaryStage.initStyle(StageStyle.TRANSPARENT);
       primaryStage.centerOnScreen();
 
-      Pane root = new Pane();
-      root.setId("app-area");
+      // Create the application background
+      AnchorPane root = new AnchorPane();
+      root.setId("app-surface");
 
       Scene scene = new Scene(root, 551, 270, Color.rgb(0, 0, 0, 0));
-
 
       // load JavaFX CSS style
       scene.getStylesheets()
@@ -68,20 +63,19 @@ public class PlayingAudio extends Application {
       // Create the button panel
       Node buttonPanel = createButtonPanel(scene);
 
-      // allows the user to see the progress of the video playing
+      // Allows the user to see the progress of the video playing
       Slider progressSlider = createSlider(root);
 
-      // update slider as video is progressing (later removal)
+      // Updates slider as video is progressing
       progressListener = (observable, oldValue, newValue) -> 
          progressSlider.setValue(newValue.toSeconds());
 
       // Initializing to accept files 
-      // dragged over surface to load media
-
+      // using drag and dropping over the surface to load media
       initFileDragNDrop(scene);
 
       // Create the close button
-      Node closeButton = createCloseButton(scene);
+      Node closeButton = createCloseButton(root);
       
       root.getChildren()
           .addAll(chartArea,
@@ -90,12 +84,6 @@ public class PlayingAudio extends Application {
                   closeButton);
       
       primaryStage.show();
-
-      // Reposition slider and button panel after CSS is applied and stage is shown.
-      progressSlider.setTranslateX(root.getBorder().getInsets().getLeft() + 2 );
-      progressSlider.setTranslateY(root.getHeight() - (root.getBorder().getInsets().getBottom() + progressSlider.getHeight()));
-      buttonPanel.setTranslateX(root.getWidth() - (buttonPanel.getBoundsInLocal().getWidth() + root.getBorder().getInsets().getRight() + 2));
-      buttonPanel.setTranslateY(root.getHeight() - (buttonPanel.getBoundsInLocal().getHeight() + root.getBorder().getInsets().getBottom() + 2));
    }
 
    /**
@@ -190,27 +178,29 @@ public class PlayingAudio extends Application {
    private Node createButtonPanel(Scene scene) {
 
       // create button control panel
-      Group buttonGroup = new Group();
+      FlowPane buttonPanel = new FlowPane();
+      buttonPanel.setId("button-panel");
 
       // Button area
-      Rectangle buttonArea = new Rectangle(60, 30);
-      buttonArea.setId("button-area");
+      AnchorPane.setRightAnchor(buttonPanel, 3.0);
+      AnchorPane.setBottomAnchor(buttonPanel, 3.0);
 
-      buttonGroup.getChildren()
-              .add(buttonArea);
-      
       // stop button control
       Node stopButton = new Rectangle(10, 10);
-      stopButton.setId(STOP_BUTTON_ID);
+      stopButton.setId("stop-button");
       stopButton.setOnMousePressed(mouseEvent -> {
          if (mediaPlayer != null) {
             updatePlayAndPauseButtons(true, scene);
             if (mediaPlayer.getStatus() == Status.PLAYING) {
                mediaPlayer.stop();
             }
+            playAndPauseToggle.set(false);
          }
-      }); // setOnMousePressed()
-      
+      });
+
+      // Toggle Button
+      StackPane playPauseToggleButton = new StackPane();
+
       // play button
       Arc playButton = new Arc(12, // center x 
               16, // center y                 
@@ -218,13 +208,12 @@ public class PlayingAudio extends Application {
               15, // radius y
               150, // start angle
               60);  // length
-      playButton.setId(PLAY_BUTTON_ID);
+      playButton.setId("play-button");
       playButton.setType(ArcType.ROUND);
-      playButton.setOnMousePressed(mouseEvent -> mediaPlayer.play());
-      
+
       // pause control
       Group pauseButton = new Group();
-      pauseButton.setId(PAUSE_BUTTON_ID);
+      pauseButton.setId("pause-button");
       Node pauseBackground = new Circle(12, 16, 10);
       pauseBackground.getStyleClass().add("pause-circle");
 
@@ -243,29 +232,33 @@ public class PlayingAudio extends Application {
 
       pauseButton.getChildren()
            .addAll(pauseBackground, firstLine, secondLine);
-      
-      pauseButton.setOnMousePressed(mouseEvent -> {
-         if (mediaPlayer!=null) {
-            updatePlayAndPauseButtons(true, scene);
-            if (mediaPlayer.getStatus() == Status.PLAYING) {
-               mediaPlayer.pause();
+
+
+      playPauseToggleButton.getChildren().addAll(playButton, pauseButton);
+      playAndPauseToggle.addListener( (observable, oldValue, newValue) -> {
+         if (newValue) {
+            if (mediaPlayer != null) {
+               updatePlayAndPauseButtons(false, scene);
+               mediaPlayer.play();
+            }
+         } else {
+            if (mediaPlayer!=null) {
+               updatePlayAndPauseButtons(true, scene);
+               if (mediaPlayer.getStatus() == Status.PLAYING) {
+                  mediaPlayer.pause();
+               }
             }
          }
       });
       
-      
-      playButton.setOnMousePressed(mouseEvent -> {
-         if (mediaPlayer != null) {
-            updatePlayAndPauseButtons(false, scene);
-            mediaPlayer.play();
-         }
+      playPauseToggleButton.setOnMousePressed( mouseEvent ->{
+         playAndPauseToggle.set(!playAndPauseToggle.get());
       });
-      buttonGroup.getChildren()
+      buttonPanel.getChildren()
                  .addAll(stopButton,
-                         playButton, 
-                         pauseButton); 
-
-      return buttonGroup;
+                         playPauseToggleButton);
+      buttonPanel.setPrefWidth(50);
+      return buttonPanel;
    }
 
    /**
@@ -273,19 +266,21 @@ public class PlayingAudio extends Application {
     *
     * @return Node representing a close button.
     */
-   private Node createCloseButton(Scene scene) {
+   private Node createCloseButton(AnchorPane root) {
 
       StackPane closeButton = new StackPane();
-      closeButton.setId(CLOSE_BUTTON_ID);
-      Node closeBackground = new Circle(5, 0, 7);
+      closeButton.setId("close-button");
+
+      Node closeBackground = new Circle(0, 0, 7);
       closeBackground.setId("close-circle");
-      Text closeXmark = new Text("X");
-      closeButton.translateXProperty()
-                 .bind(scene.widthProperty()
-                            .subtract(closeBackground.getBoundsInLocal().getWidth() + 3));
-      closeButton.setTranslateY(2);
+      SVGPath closeXmark = new SVGPath();
+      closeXmark.setId("close-x-mark");
+      closeXmark.setContent("M 0 0 L 6 6 M 6 0 L 0 6");
+      AnchorPane.setRightAnchor(closeButton, 2.0);
+      AnchorPane.setTopAnchor(closeButton, 2.0);
       closeButton.getChildren()
-                 .addAll(closeBackground, closeXmark);
+                 .addAll(closeBackground,
+                         closeXmark);
       // exit app
       closeButton.setOnMouseClicked(mouseEvent -> {
          if (mediaPlayer != null){
@@ -329,19 +324,20 @@ public class PlayingAudio extends Application {
          });
          updatePlayAndPauseButtons(false, scene);
          Slider progressSlider = 
-               (Slider) scene.lookup("#" + SEEK_POS_SLIDER_ID);
+               (Slider) scene.lookup("#seek-position-slider");
          progressSlider.setValue(0);
          progressSlider.setMax(mediaPlayer.getMedia()
                                           .getDuration()
                                           .toSeconds());
          mediaPlayer.play();
-      }); // setOnReady()
+      });
       
       // back to the beginning
       mediaPlayer.setOnEndOfMedia( ()-> {
          updatePlayAndPauseButtons(true, scene);
          // change buttons to play and rewind 
          mediaPlayer.stop();
+         playAndPauseToggle.set(false);
       });
       
       int chartPadding = 5;
@@ -424,19 +420,21 @@ public class PlayingAudio extends Application {
    * @param scene - The scene graph
    */
    private void updatePlayAndPauseButtons(boolean playVisible, Scene scene) {
-      Node playButton = scene.lookup("#" + PLAY_BUTTON_ID);
-      Node pauseButton = scene.lookup("#" + PAUSE_BUTTON_ID);
+      Node playButton = scene.lookup("#play-button");
+      Node pauseButton = scene.lookup("#pause-button");
 
       if (playVisible) {
          // show play button
          playButton.toFront();
-         playButton.setVisible(playVisible);
+         playButton.setVisible(true);
+         pauseButton.setVisible(false);
          pauseButton.toBack();
 
       } else {
          // show pause button
          pauseButton.toFront();
-         pauseButton.setVisible(!playVisible);
+         pauseButton.setVisible(true);
+         playButton.setVisible(false);
          playButton.toBack();
       }
 
@@ -447,22 +445,24 @@ public class PlayingAudio extends Application {
     *
     * @return Slider control bound to media player.
     */
-   private Slider createSlider(Pane root) {
-   Slider slider = new Slider(0, 100, 1);
-   slider.setId(SEEK_POS_SLIDER_ID);
-   slider.valueProperty()
-         .addListener((observable) -> {
-             if (slider.isValueChanging()) {
-               // must check if media is paused before seeking 
-               if (mediaPlayer != null && 
-                   mediaPlayer.getStatus() == MediaPlayer.Status.PAUSED) {
-                  
-                  // convert seconds to millis
-                  double dur = slider.getValue() * 1000;
-                  mediaPlayer.seek(Duration.millis(dur));
-               }
-             }
-         });
+   private Slider createSlider(AnchorPane root) {
+      Slider slider = new Slider(0, 100, 1);
+      AnchorPane.setLeftAnchor(slider, 2.0);
+      AnchorPane.setBottomAnchor(slider, 2.0);
+      slider.setId("seek-position-slider");
+      slider.valueProperty()
+            .addListener((observable) -> {
+                if (slider.isValueChanging()) {
+                  // must check if media is paused before seeking
+                  if (mediaPlayer != null &&
+                      mediaPlayer.getStatus() == MediaPlayer.Status.PAUSED) {
+
+                     // convert seconds to millis
+                     double dur = slider.getValue() * 1000;
+                     mediaPlayer.seek(Duration.millis(dur));
+                  }
+                }
+            });
       return slider;
    }
 
