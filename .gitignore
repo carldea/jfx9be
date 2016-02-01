@@ -40,5 +40,5 @@ nbactions.xml
 .idea/
 *.ipr
 *.iws
-/out/
+out/
 .idea_modules/
