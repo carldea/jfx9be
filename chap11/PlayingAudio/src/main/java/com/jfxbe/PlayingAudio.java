@@ -13,8 +13,6 @@ import javafx.scene.layout.*;
 import javafx.scene.media.*;
 import javafx.scene.media.MediaPlayer.Status;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.LinearGradient;
-import javafx.scene.paint.Stop;
 import javafx.scene.shape.*;
 import javafx.stage.*;
 import javafx.util.Duration;
@@ -30,7 +28,6 @@ public class PlayingAudio extends Application {
    private Point2D anchorPt;
    private Point2D previousLocation;
    private ChangeListener<Duration> progressListener;
-   private Path chartArea = new Path();
    private BooleanProperty playAndPauseToggle = new SimpleBooleanProperty(true);
 
    /**
@@ -60,11 +57,19 @@ public class PlayingAudio extends Application {
       // Initialize stage to be movable via mouse
       initMovablePlayer(primaryStage);
 
+      // Create the spectrum chart path area
+      Path chartArea = new Path();
+      chartArea.setId("chart-area");
+
       // Create the button panel
       Node buttonPanel = createButtonPanel(scene);
+      AnchorPane.setRightAnchor(buttonPanel, 3.0);
+      AnchorPane.setBottomAnchor(buttonPanel, 3.0);
 
       // Allows the user to see the progress of the video playing
-      Slider progressSlider = createSlider(root);
+      Slider progressSlider = createSlider();
+      AnchorPane.setLeftAnchor(progressSlider, 2.0);
+      AnchorPane.setBottomAnchor(progressSlider, 2.0);
 
       // Updates slider as video is progressing
       progressListener = (observable, oldValue, newValue) -> 
@@ -75,8 +80,10 @@ public class PlayingAudio extends Application {
       initFileDragNDrop(scene);
 
       // Create the close button
-      Node closeButton = createCloseButton(root);
-      
+      Node closeButton = createCloseButton();
+      AnchorPane.setRightAnchor(closeButton, 2.0);
+      AnchorPane.setTopAnchor(closeButton, 2.0);
+
       root.getChildren()
           .addAll(chartArea,
                   buttonPanel,
@@ -131,7 +138,7 @@ public class PlayingAudio extends Application {
     *
     */
    private void initFileDragNDrop(Scene scene) {
-
+      // Drag over surface
       scene.setOnDragOver(dragEvent -> {
          Dragboard db = dragEvent.getDragboard();
          if (db.hasFiles() || db.hasUrl()) {
@@ -140,6 +147,7 @@ public class PlayingAudio extends Application {
             dragEvent.consume();
          }
       });
+
       // Dropping over surface
       scene.setOnDragDropped(dragEvent -> {
          Dragboard db = dragEvent.getDragboard();
@@ -149,6 +157,7 @@ public class PlayingAudio extends Application {
             success = true;
             if (db.getFiles().size() > 0) {
                try {
+                  // obtain file and play media
                   filePath = db.getFiles()
                           .get(0)
                           .toURI().toURL().toString();
@@ -165,7 +174,7 @@ public class PlayingAudio extends Application {
 
          dragEvent.setDropCompleted(success);
          dragEvent.consume();
-      }); // end of setOnDragDropped
+      });
    }
 
    /**
@@ -181,10 +190,6 @@ public class PlayingAudio extends Application {
       FlowPane buttonPanel = new FlowPane();
       buttonPanel.setId("button-panel");
 
-      // Button area
-      AnchorPane.setRightAnchor(buttonPanel, 3.0);
-      AnchorPane.setBottomAnchor(buttonPanel, 3.0);
-
       // stop button control
       Node stopButton = new Rectangle(10, 10);
       stopButton.setId("stop-button");
@@ -198,10 +203,10 @@ public class PlayingAudio extends Application {
          }
       });
 
-      // Toggle Button
+      // Toggle Button containing a Play and Pause button
       StackPane playPauseToggleButton = new StackPane();
 
-      // play button
+      // Play button control
       Arc playButton = new Arc(12, // center x 
               16, // center y                 
               15, // radius x
@@ -211,11 +216,12 @@ public class PlayingAudio extends Application {
       playButton.setId("play-button");
       playButton.setType(ArcType.ROUND);
 
-      // pause control
+      // Pause control
       Group pauseButton = new Group();
       pauseButton.setId("pause-button");
       Node pauseBackground = new Circle(12, 16, 10);
-      pauseBackground.getStyleClass().add("pause-circle");
+      pauseBackground.getStyleClass()
+                     .add("pause-circle");
 
       Node firstLine = new Line(6,  // start x 
                                 6,  // start y  
@@ -228,20 +234,28 @@ public class PlayingAudio extends Application {
                                  6,   // start y  
                                  6,   // end x 
                                  14); // end y 
-      secondLine.getStyleClass().addAll("pause-line", "second-line");
+      secondLine.getStyleClass()
+                .addAll("pause-line", "second-line");
 
       pauseButton.getChildren()
-           .addAll(pauseBackground, firstLine, secondLine);
+                 .addAll(pauseBackground, firstLine, secondLine);
 
+      playPauseToggleButton.getChildren()
+                           .addAll(playButton, pauseButton);
 
-      playPauseToggleButton.getChildren().addAll(playButton, pauseButton);
-      playAndPauseToggle.addListener( (observable, oldValue, newValue) -> {
+      // Boolean property toggling the playing and pausing
+      // the media player
+      playAndPauseToggle.addListener(
+              (observable, oldValue, newValue) -> {
+
          if (newValue) {
+            // Play
             if (mediaPlayer != null) {
                updatePlayAndPauseButtons(false, scene);
                mediaPlayer.play();
             }
          } else {
+            // Pause
             if (mediaPlayer!=null) {
                updatePlayAndPauseButtons(true, scene);
                if (mediaPlayer.getStatus() == Status.PLAYING) {
@@ -250,14 +264,17 @@ public class PlayingAudio extends Application {
             }
          }
       });
-      
+
+      // Press toggle button
       playPauseToggleButton.setOnMousePressed( mouseEvent ->{
          playAndPauseToggle.set(!playAndPauseToggle.get());
       });
+
       buttonPanel.getChildren()
                  .addAll(stopButton,
                          playPauseToggleButton);
       buttonPanel.setPrefWidth(50);
+
       return buttonPanel;
    }
 
@@ -266,7 +283,7 @@ public class PlayingAudio extends Application {
     *
     * @return Node representing a close button.
     */
-   private Node createCloseButton(AnchorPane root) {
+   private Node createCloseButton() {
 
       StackPane closeButton = new StackPane();
       closeButton.setId("close-button");
@@ -276,8 +293,7 @@ public class PlayingAudio extends Application {
       SVGPath closeXmark = new SVGPath();
       closeXmark.setId("close-x-mark");
       closeXmark.setContent("M 0 0 L 6 6 M 6 0 L 0 6");
-      AnchorPane.setRightAnchor(closeButton, 2.0);
-      AnchorPane.setTopAnchor(closeButton, 2.0);
+
       closeButton.getChildren()
                  .addAll(closeBackground,
                          closeXmark);
@@ -309,10 +325,11 @@ public class PlayingAudio extends Application {
                     .removeListener(progressListener);
          mediaPlayer.setAudioSpectrumListener(null);
       }
+
+      // create a new media player
       Media media = new Media(url);
-      
       mediaPlayer = new MediaPlayer(media);
-      
+
       // as the media is playing move the slider for progress
       mediaPlayer.currentTimeProperty()
                  .addListener(progressListener);
@@ -332,68 +349,82 @@ public class PlayingAudio extends Application {
          mediaPlayer.play();
       });
       
-      // back to the beginning
+      // Rewind back to the beginning
       mediaPlayer.setOnEndOfMedia( ()-> {
          updatePlayAndPauseButtons(true, scene);
-         // change buttons to play and rewind 
+         // change buttons to the play button
          mediaPlayer.stop();
          playAndPauseToggle.set(false);
       });
-      
+
+      // Obtain chart path area
+      Path chartArea = (Path) scene.lookup("#chart-area");
+
       int chartPadding = 5;
+
+      // The frequency domain is the X Axis.
+      // The freqAxisY is the Y coordinate of the freq axis.
       double freqAxisY = scene.getHeight() - 45;
 
-      chartArea.setStrokeLineJoin(StrokeLineJoin.ROUND);
-      chartArea.setStrokeWidth(1.5);
-      chartArea.setSmooth(true);
-      chartArea.setStroke(Color.WHITE);
-      chartArea.setFill(
-              new LinearGradient(chartPadding, chartPadding, chartPadding, freqAxisY, false, null,
-                      new Stop((0.0), deriveColorAlpha(Color.RED, .70)),
-                      new Stop(.40, deriveColorAlpha(Color.ORANGE, .70)),
-                      new Stop(.70, deriveColorAlpha(Color.YELLOW, .70)),
-                      new Stop(.80, deriveColorAlpha(Color.GREEN, .70)),
-                      new Stop(.90, deriveColorAlpha(Color.BLUE, .70)),
-                      new Stop(.95, deriveColorAlpha(Color.INDIGO, .70)),
-                      new Stop(1, deriveColorAlpha(Color.VIOLET, .70))));
+      // The chart's height
       double chartHeight = freqAxisY - chartPadding;
       Pane root = (Pane) scene.getRoot();
-      /*
-      -fx-border-insets: 6 6 6 6;
-      -fx-border-width: 1.5;
-       */
-      double padding = root.getBorder().getInsets().getLeft(); // 7.5 (union of inset and border width)
+
+      // In the CSS file the padding is set with the following:
+      //   -fx-border-insets: 6 6 6 6; (top, right, bottom, left)
+      //   -fx-border-width: 1.5;
+      // Below the padding will equal 7.5 which is the union of
+      // the inset 6 (left) and border width of 1.5)
+      double padding = root.getBorder().getInsets().getLeft();
       double chartWidth = root.getWidth() - ((2 * padding) + (2 * chartPadding));
+
+      // Audio sound is in decibels and the magnitude is from 0 to -60
+      // Squaring the magnitudes stretches the plot. Also dividing into
+      // the chart height will normalize or keep the y coordinate within the
+      // chart bounds.
       double scaleY = chartHeight / (60 * 60);
-      double space = 5; // between each data point
+      double space = 5; // between each data point. Helps stretch the chart width-wise.
 
       mediaPlayer.setAudioSpectrumListener(
          (double timestamp,
           double duration,
           float[] magnitudes,
           float[] phases) -> {
-
+            if (mediaPlayer.getStatus() == Status.PAUSED || mediaPlayer.getStatus() == Status.STOPPED) {
+               return;
+            }
+            // The freqBarX is the x coordinate to plot
             double freqBarX = padding + chartPadding;
 
+            // The scaleX is one unit. This keeps the plotting within the chart width area.
             double scaleX = chartWidth / (magnitudes.length * space);
-            // check if data array created.
-            // if not create the number of path components to be
-            // added to the chartArea path.
-            if (chartArea.getElements().size() -3 != magnitudes.length) {
 
+            // Checks if the data array is created.
+            // If not create the number of path components to be
+            // added to the chartArea path. The check of the size minus 3 is excluding
+            // the first MoveTo element, and the last two elements LineTo, and ClosePath
+            // respectively.
+            if ((chartArea.getElements().size() - 3) != magnitudes.length) {
+
+               // move to bottom left of chart.
                chartArea.getElements().clear();
                chartArea.getElements().add(new MoveTo(freqBarX, freqAxisY));
 
+               // Update LineTo elements to draw the line chart
                for(float magnitude:magnitudes) {
                   double dB = magnitude * magnitude;
                   dB = chartHeight - dB * scaleY;
                   chartArea.getElements().add(new LineTo(freqBarX, freqAxisY - dB));
                   freqBarX+=(scaleX * space);
                }
+
+               // End by a LineTo bottom right of the chart and close path
+               // to form an area shape.
                chartArea.getElements().add(new LineTo(freqBarX, freqAxisY));
                chartArea.getElements().add(new ClosePath());
             } else {
-               // if already created go through and update path components
+               // if elements already created
+               // go through and update path elements
                int idx = 0;
                for(float magnitude:magnitudes) {
                   double dB = magnitude * magnitude;
@@ -401,6 +432,7 @@ public class PlayingAudio extends Application {
 
                   // skip first MoveTo element in path.
                   idx++;
+                  // update elements with a x and y
                   LineTo dataPoint = (LineTo) chartArea.getElements().get(idx);
                   dataPoint.setX(freqBarX);
                   dataPoint.setY(freqAxisY - dB);
@@ -445,10 +477,8 @@ public class PlayingAudio extends Application {
     *
     * @return Slider control bound to media player.
     */
-   private Slider createSlider(AnchorPane root) {
+   private Slider createSlider() {
       Slider slider = new Slider(0, 100, 1);
-      AnchorPane.setLeftAnchor(slider, 2.0);
-      AnchorPane.setBottomAnchor(slider, 2.0);
       slider.setId("seek-position-slider");
       slider.valueProperty()
             .addListener((observable) -> {
@@ -464,9 +494,5 @@ public class PlayingAudio extends Application {
                 }
             });
       return slider;
-   }
-
-   private Color deriveColorAlpha(Color color, double alpha) {
-      return Color.color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
    }
 }

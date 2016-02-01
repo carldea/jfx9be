@@ -20,6 +20,27 @@
     -fx-border-radius: 5;
 }
 
+#chart-area {
+    -fx-stroke: white;
+    -fx-stroke-width: 1.5;
+    -fx-stroke-type: outside;
+    -fx-smooth: true;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+    /*
+       chartPadding = 5
+       freqAxisY = 225
+    */
+    -fx-fill: linear-gradient(from 5 5 to 5 225,
+           rgba(255, 0, 0, .70) 0%,    /* Red    */
+           rgba(255, 165, 0, .70) 40%, /* Orange */
+           rgba(255, 255, 0, .70) 70%, /* Yellow */
+           rgba(0, 255, 0, .70) 80%,   /* Green  */
+           rgba(0, 0, 255, .70) 90%,   /* Blue   */
+           rgba(75,0,128,.70) 95%,     /* Indigo */
+           rgba(238,130,238,.70) 100%) /* Violet */
+}
+
 #button-panel {
     /* Background */
     -fx-background-color:  -black-ish;
@@ -49,7 +70,7 @@
     -fx-fill:        -white-ish;
 }
 #play-button:hover {
-    -fx-border-color: red;
+    -fx-stroke: derive(red, 90%);
 }
 
 .pause-circle {
