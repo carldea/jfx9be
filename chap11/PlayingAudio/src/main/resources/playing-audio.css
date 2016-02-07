@@ -78,9 +78,6 @@
     -fx-stroke-width: 1.5;
 
 }
-.pause-circle:hover {
-    -fx-stroke: derive(red, 90%);
-}
 
 .pause-line {
     -fx-stroke-width: 3;
