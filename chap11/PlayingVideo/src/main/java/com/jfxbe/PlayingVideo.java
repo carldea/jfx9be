@@ -2,9 +2,11 @@ package com.jfxbe;
 
 import java.net.MalformedURLException;
 import javafx.application.*;
+import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.*;
 import javafx.scene.control.Alert;
@@ -20,18 +22,18 @@ import javafx.stage.*;
 import javafx.util.Duration;
 
 /**
- * Playing Audio using the JavaFX MediaPlayer API.
+ * Playing Video using the JavaFX MediaPlayer API.
  *
  * @author carldea
  */
-public class PlayingAudio extends Application {
+public class PlayingVideo extends Application {
 
    private MediaPlayer mediaPlayer;
    private Point2D anchorPt;
    private Point2D previousLocation;
    private ChangeListener<Duration> progressListener;
    private BooleanProperty playAndPauseToggle = new SimpleBooleanProperty(true);
-   private static final EventHandler<MouseEvent> mouseEventConsumer = event -> event.consume();
+   private EventHandler<MouseEvent> mouseEventConsumer = event -> event.consume();
 
 
    /**
@@ -43,8 +45,9 @@ public class PlayingAudio extends Application {
 
    @Override
    public void start(Stage primaryStage) {
+      // Bug: JDK-8087498 [Mac] Full screen mode fails for certain StageStyles
       // Remove native window borders and title bar
-      primaryStage.initStyle(StageStyle.TRANSPARENT);
+      //primaryStage.initStyle(StageStyle.TRANSPARENT);
 
       // Create the application surface or background
       Pane root = new AnchorPane();
@@ -54,16 +57,14 @@ public class PlayingAudio extends Application {
 
       // load JavaFX CSS style
       scene.getStylesheets()
-           .add(getClass().getResource("/playing-audio.css")
+           .add(getClass().getResource("/playing-video.css")
                           .toExternalForm());
       primaryStage.setScene(scene);
 
+      // Initialize stage to be fullscreen
+      initFullScreenMode(primaryStage);
       // Initialize stage to be movable via mouse
       initMovablePlayer(primaryStage);
-
-      // Create a Path instance for the area chart
-      Path chartArea = new Path();
-      chartArea.setId("chart-area");
 
       // Create the button panel (stop, play and pause)
       Node buttonPanel = createButtonPanel(root);
@@ -79,6 +80,10 @@ public class PlayingAudio extends Application {
       progressListener = (observable, oldValue, newValue) -> 
          progressSlider.setValue(newValue.toSeconds());
 
+      // Create a media view to display video
+      MediaView mediaView = createMediaView(root);
+
+
       // Initializing Scene to accept files
       // using drag and dropping over the surface to load media
       initFileDragNDrop(root);
@@ -89,7 +94,7 @@ public class PlayingAudio extends Application {
       AnchorPane.setTopAnchor(closeButton, 2.0);
 
       root.getChildren()
-          .addAll(chartArea,
+          .addAll(mediaView,
                   buttonPanel,
                   progressSlider,
                   closeButton);
@@ -97,7 +102,23 @@ public class PlayingAudio extends Application {
       primaryStage.centerOnScreen();
       primaryStage.show();
    }
+   /**
+    * Bug: JDK-8087498 [Mac] Full screen mode fails for certain StageStyles
+    * Attaches event handler code (mouse event) to
+    * toggle to Full screen mode. Double click the scene.
+    */
+   private void initFullScreenMode(Stage primaryStage) {
+      Scene scene = primaryStage.getScene();
 
+
+      // Full screen toggle
+      scene.setOnMouseClicked((MouseEvent event) -> {
+         if (event.getClickCount() == 2) {
+            Platform.runLater(() ->
+                    primaryStage.setFullScreen(!primaryStage.isFullScreen()) );
+         }
+      });
+   }
    /**
     * Initialize the stage to allow the mouse cursor to move the application
     * using dragging.
@@ -184,6 +205,83 @@ public class PlayingAudio extends Application {
          dragEvent.setDropCompleted(success);
          dragEvent.consume();
       });
+   }
+
+   /**
+    * Create a MediaView node.
+    *
+    * @return Pane
+    */
+   private MediaView createMediaView(Pane root) {
+      MediaView mediaView = new MediaView();
+      mediaView.setId("media-view");
+      mediaView.setPreserveRatio(true);
+      mediaView.setSmooth(true);
+
+      // Calculate width of the MediaView (in AnchorPane)
+      DoubleBinding widthProperty = new DoubleBinding(){
+         @Override
+         protected double computeValue() {
+            return root.getWidth() - (root.getInsets()
+                                          .getLeft() +
+                                      root.getInsets()
+                                          .getRight());
+         }
+      };
+
+      // Calculate height of the clipping region.
+      // This prevents video to display beyond bottom border area.
+      DoubleBinding heightClipProperty = new DoubleBinding(){
+         @Override
+         protected double computeValue() {
+            return root.getHeight() - (root.getInsets()
+                                           .getTop() +
+                                       root.getInsets()
+                                           .getBottom());
+         }
+      };
+
+      // Recalculate when the width changes
+      root.widthProperty().addListener(observable1 ->
+              widthProperty.invalidate());
+
+      // Recalculate when the height changes
+      root.heightProperty().addListener(observable1 ->
+              heightClipProperty.invalidate());
+
+      // Bindings for the media view's fitWidth
+      mediaView.fitWidthProperty().bind(widthProperty);
+
+      // Create a clip region to be a rounded rectangle
+      // matching the root pane's rounded border.
+      // Bindings use the calculated size properties:
+      // widthProperty and heightClipProperty
+      Rectangle clipRegion = new Rectangle();
+      clipRegion.setArcWidth(10);
+      clipRegion.setArcHeight(10);
+      clipRegion.widthProperty().bind(widthProperty);
+      clipRegion.heightProperty().bind(heightClipProperty);
+      mediaView.setClip(clipRegion);
+
+      // Update calculations on invalidation listener
+      // to reposition media view and clip region
+      root.insetsProperty().addListener(observable -> {
+         widthProperty.invalidate();
+         heightClipProperty.invalidate();
+         Insets insets = root.getInsets();
+         clipRegion.setX(insets.getRight());
+         clipRegion.setY(insets.getTop());
+         mediaView.setX(insets.getRight());
+         mediaView.setY(insets.getTop());
+      });
+
+      // when errors occur
+      mediaView.setOnError(mediaErrorEvent -> {
+         mediaErrorEvent.getMediaError()
+                        .printStackTrace();
+      });
+
+      return mediaView;
    }
 
    /**
@@ -372,7 +470,6 @@ public class PlayingAudio extends Application {
          return;
       }
       final Media media = validMedia;
-
       mediaPlayer = new MediaPlayer(media);
 
       // as the media is playing move the slider for progress
@@ -402,89 +499,10 @@ public class PlayingAudio extends Application {
          playAndPauseToggle.set(false);
       });
 
-      // Obtain chart path area
-      Path chartArea = (Path) root.lookup("#chart-area");
-
-      int chartPadding = 5;
-
-      // The frequency domain is the X Axis.
-      // The freqAxisY is the Y coordinate of the freq axis.
-      double freqAxisY = root.getHeight() - 45;
-
-      // The chart's height
-      double chartHeight = freqAxisY - chartPadding;
-
-      // In the CSS file the padding is set with the following:
-      //   -fx-border-insets: 6 6 6 6; (top, right, bottom, left)
-      //   -fx-border-width: 1.5;
-      // Below the padding will equal 7.5 which is the union of
-      // the inset 6 (left) and border width of 1.5)
-      double padding = root.getBorder().getInsets().getLeft();
-      double chartWidth = root.getWidth() - ((2 * padding) + (2 * chartPadding));
-
-      // Audio sound is in decibels and the magnitude is from 0 to -60
-      // Squaring the magnitudes stretches the plot. Also dividing into
-      // the chart height will normalize or keep the y coordinate within the
-      // chart bounds.
-      double scaleY = chartHeight / (60 * 60);
-      double space = 5; // between each data point. Helps stretch the chart width-wise.
-
-      mediaPlayer.setAudioSpectrumListener(
-         (double timestamp,
-          double duration,
-          float[] magnitudes,
-          float[] phases) -> {
-            if (mediaPlayer.getStatus() == Status.PAUSED || mediaPlayer.getStatus() == Status.STOPPED) {
-               return;
-            }
-            // The freqBarX is the x coordinate to plot
-            double freqBarX = padding + chartPadding;
-
-            // The scaleX is one unit. This keeps the plotting within the chart width area.
-            double scaleX = chartWidth / (magnitudes.length * space);
-
-            // Checks if the data array is created.
-            // If not create the number of path components to be
-            // added to the chartArea path. The check of the size minus 3 is excluding
-            // the first MoveTo element, and the last two elements LineTo, and ClosePath
-            // respectively.
-            if ((chartArea.getElements().size() - 3) != magnitudes.length) {
-
-               // Move to bottom left of chart.
-               chartArea.getElements().clear();
-               chartArea.getElements().add(new MoveTo(freqBarX, freqAxisY));
-
-               // Update all LineTo elements to draw the line chart
-               for(float magnitude:magnitudes) {
-                  double dB = magnitude * magnitude;
-                  dB = chartHeight - dB * scaleY;
-                  chartArea.getElements().add(new LineTo(freqBarX, freqAxisY - dB));
-                  freqBarX+=(scaleX * space);
-               }
-
-               // Close the path by adding LineTo to the bottom right
-               // of the chart and close path to form an shape.
-               chartArea.getElements().add(new LineTo(freqBarX, freqAxisY));
-               chartArea.getElements().add(new ClosePath());
-            } else {
-               // If elements already created
-               // go through and update path elements
-               int idx = 0;
-               for(float magnitude:magnitudes) {
-                  double dB = magnitude * magnitude;
-                  dB = chartHeight - dB * scaleY;
-
-                  // skip first MoveTo element in path.
-                  idx++;
-
-                  // update elements with a x and y
-                  LineTo dataPoint = (LineTo) chartArea.getElements().get(idx);
-                  dataPoint.setX(freqBarX);
-                  dataPoint.setY(freqAxisY - dB);
-                  freqBarX += (scaleX * space);
-               }
-            }
-     });
+      // set the media player to display video
+      MediaView mediaView
+              = (MediaView) root.getScene().lookup("#media-view");
+      mediaView.setMediaPlayer(mediaPlayer);
 
    }
   
