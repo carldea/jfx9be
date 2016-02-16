@@ -1,0 +1,121 @@
+.root {
+    -white-ish: rgba(255, 255, 255, .90); 
+    -black-ish: rgba(0, 0, 0, .80);
+}
+
+#app-surface {
+    /* Application surface */
+    -fx-snap-to-pixel: false;
+
+    /* Background  */
+    -fx-background-color:  -black-ish;
+    -fx-background-radius: 7;
+    -fx-background-insets: 2 2 2 2;
+
+    /* Border */
+    -fx-border-color:  -white-ish;
+    -fx-border-style:  solid;
+    -fx-border-insets: 6 6 6 6;
+    -fx-border-width:  1.5;
+    -fx-border-radius: 5;
+}
+
+
+
+#button-panel {
+    /* Background */
+    -fx-background-color:  -black-ish;
+    -fx-background-radius: 7;
+
+    /* Border */
+    -fx-border-radius:     5;
+    -fx-border-color:      -white-ish;
+    -fx-border-style:      solid;
+    -fx-border-width:      1.5;
+    -fx-stroke:            -white-ish;
+    -fx-alignment:         center-right;
+    -fx-hgap: 5;
+}
+
+#stop-button {
+    -fx-arc-width:   5;
+    -fx-arc-height:  5;
+    -fx-fill:        -white-ish;
+    -fx-stroke:      -white-ish;
+}
+#stop-button:hover {
+    -fx-stroke: red;
+}
+
+#play-button {
+    -fx-fill:        -white-ish;
+}
+#play-button:hover {
+    -fx-stroke: derive(red, 90%);
+}
+
+.pause-circle {
+    -fx-stroke:      -white-ish;
+    -fx-stroke-width: 1.5;
+}
+
+.pause-line {
+    -fx-stroke-width: 3;
+    -fx-stroke:       -white-ish;
+    -fx-translate-y:  6;
+}
+
+.pause-line.first-line {
+    -fx-translate-x: 4;
+}
+
+.pause-line.second-line {
+    -fx-translate-x: 8;
+}
+
+/* Close button */
+#close-x-mark {
+    -fx-stroke-width: 1.5;
+    -fx-stroke: -black-ish;
+
+}
+
+#close-circle {
+    -fx-stroke: rgba(235, 90, 78, .90);
+    -fx-fill: rgba(186, 90, 78, .90);
+    -fx-snap-to-pixel: false;
+}
+#close-circle:hover {
+    -fx-stroke: derive(red, 90%);
+}
+
+/* Play progress and seek slider */
+.slider {
+    -fx-show-tick-labels: false;
+    -fx-show-tick-marks:  true;
+}
+
+/* A triangle shaped thumb */
+.slider .thumb {
+    -fx-shape: "M 2 2 L 6 6 L 2 10 L 3 6 Z";
+}
+.slider .thumb:hover {
+    -fx-border-color:derive(red, 90%);
+}
+.slider .track {
+    -fx-pref-height: 6;
+    -fx-background-radius: 2;
+    -fx-background-color: derive(black, 40%);
+    -fx-border-color:derive(gray, 80%);
+}
+.slider .axis .axis-label {
+    -fx-text-fill: white;
+}
+
+#closed-caption-text {
+    -fx-text-wrap: true;
+    -fx-text-fill: white;
+    -fx-font-size: 20;
+    -fx-font-family: 'Helvetica';
+    -fx-background-color: -black-ish;
+}
