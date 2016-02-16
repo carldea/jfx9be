@@ -47,7 +47,7 @@ public class PlayingVideo extends Application {
    public void start(Stage primaryStage) {
       // Bug: JDK-8087498 [Mac] Full screen mode fails for certain StageStyles
       // Remove native window borders and title bar
-      //primaryStage.initStyle(StageStyle.TRANSPARENT);
+      primaryStage.initStyle(StageStyle.TRANSPARENT);
 
       // Create the application surface or background
       Pane root = new AnchorPane();
@@ -241,6 +241,9 @@ public class PlayingVideo extends Application {
          }
       };
 
+      // Bindings for the media view's fitWidth
+      mediaView.fitWidthProperty().bind(widthProperty);
+
       // Recalculate when the width changes
       root.widthProperty().addListener(observable1 ->
               widthProperty.invalidate());
@@ -248,9 +251,6 @@ public class PlayingVideo extends Application {
       // Recalculate when the height changes
       root.heightProperty().addListener(observable1 ->
               heightClipProperty.invalidate());
-
-      // Bindings for the media view's fitWidth
-      mediaView.fitWidthProperty().bind(widthProperty);
 
       // Create a clip region to be a rounded rectangle
       // matching the root pane's rounded border.
@@ -499,9 +499,9 @@ public class PlayingVideo extends Application {
          playAndPauseToggle.set(false);
       });
 
-      // set the media player to display video
-      MediaView mediaView
-              = (MediaView) root.getScene().lookup("#media-view");
+      // set the media player to display video (MediaView)
+      MediaView mediaView =
+              (MediaView) root.getScene().lookup("#media-view");
       mediaView.setMediaPlayer(mediaPlayer);
 
    }

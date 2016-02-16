@@ -31,7 +31,7 @@ public class PlayingAudio extends Application {
    private Point2D previousLocation;
    private ChangeListener<Duration> progressListener;
    private BooleanProperty playAndPauseToggle = new SimpleBooleanProperty(true);
-   private static final EventHandler<MouseEvent> mouseEventConsumer = event -> event.consume();
+   private EventHandler<MouseEvent> mouseEventConsumer = event -> event.consume();
 
 
    /**
