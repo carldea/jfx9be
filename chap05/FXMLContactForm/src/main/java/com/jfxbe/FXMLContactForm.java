@@ -35,6 +35,9 @@ public class FXMLContactForm extends Application {
 
         Scene scene = new Scene(root, 380, 150, Color.WHITE);
         stage.setScene(scene);
+        stage.setMinWidth(200);
+        stage.setMinHeight(200);
+
         stage.show();
     }
 }
