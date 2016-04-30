@@ -10,6 +10,11 @@ tmp/
 .settings/
 .loadpath
 
+# Java 9 convention for compiled  module directory
+mlib/
+mods/
+classpath/
+
 # NetBeans project files
 nbproject/private/
 build/

@@ -1,0 +1,1 @@
+javac -d classpath src/com/jfxbe/helloworld/HelloWorld.java
