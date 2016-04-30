@@ -1,0 +1,2 @@
+./compile
+cp -r resources/* classpath

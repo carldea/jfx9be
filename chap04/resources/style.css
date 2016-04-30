@@ -1,0 +1,60 @@
+.root {
+    common-foreground-color: rgb(255, 255, 255, 0.90);
+}
+
+#background-rect {
+    -fx-translate-x: 5px;
+    -fx-translate-y: 5px;
+    -fx-arc-height: 15;
+    -fx-arc-width: 15;
+    -fx-fill: rgba(0, 0, 0, .55);
+    -fx-stroke: common-foreground-color;
+    -fx-stroke-width: 1.5;
+}
+
+#username {
+   -fx-font-family: "Helvetica";
+   -fx-font-weight: bold;
+   -fx-font-size: 30;
+   -fx-text-fill: common-foreground-color;
+   -fx-smooth: true;
+}
+
+#padLockCell {
+   -fx-alignment: center-right;
+}
+
+#padlock {
+    -fx-position-shape: true;
+    -fx-padding: 0 0 0 20;
+    -fx-scale-shape: false;
+    -fx-background-color: common-foreground-color;
+    -fx-shape: "M24.875,15.334v-4.876c0-4.894-3.981-8.875-8.875-8.875s-8.875,3.981-8.875,8.875v4.876H5.042v15.083h21.916V15.334H24.875zM10.625,10.458c0-2.964,2.411-5.375,5.375-5.375s5.375,2.411,5.375,5.375v4.876h-10.75V10.458zM18.272,26.956h-4.545l1.222-3.667c-0.782-0.389-1.324-1.188-1.324-2.119c0-1.312,1.063-2.375,2.375-2.375s2.375,1.062,2.375,2.375c0,0.932-0.542,1.73-1.324,2.119L18.272,26.956z";
+}
+
+#denied-icon {
+    -fx-position-shape: true;
+    -fx-padding: 0 0 0 20;
+    -fx-scale-shape: false;
+    -fx-border-color: white;
+    -fx-background-color: rgba(255, 0, 0, .9);
+    -fx-shape: "M24.778,21.419 19.276,15.917 24.777,10.415 21.949,7.585 16.447,13.087 10.945,7.585 8.117,10.415 13.618,15.917 8.116,21.419 10.946,24.248 16.447,18.746 21.948,24.248z";
+}
+#granted-icon {
+    -fx-position-shape: true;
+    -fx-padding: 0 0 0 20;
+    -fx-scale-shape: false;
+    -fx-border-color: white;
+    -fx-background-color: rgba(0, 255, 0, .9);
+    -fx-shape: "M2.379,14.729 5.208,11.899 12.958,19.648 25.877,6.733 28.707,9.561 12.958,25.308z";
+}
+
+#password-field {
+   -fx-font-family: "Helvetica";
+   -fx-font-size: 20;
+   -fx-text-fill:black;
+   -fx-prompt-text-fill:gray;
+   -fx-highlight-text-fill:black;
+   -fx-highlight-fill: gray;
+   -fx-background-color: rgba(255, 255, 255, .80);
+}

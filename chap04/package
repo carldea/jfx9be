@@ -1,0 +1,3 @@
+mkdir mlib
+#jar --create --file=mlib/form-validator.jar --main-class=com.jfxbe.FormValidation -C classpath .
+jar --create --file=mlib/chap04.jar -C classpath .
