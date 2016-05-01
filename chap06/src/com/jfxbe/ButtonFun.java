@@ -17,7 +17,7 @@ import javafx.util.Duration;
 
 /**
  * Button Fun is an app showing typical buttons used in application development.
- * Car sprite image is from http://www.chasersgaming.co.uk
+ * Car sprites are from http://www.chasersgaming.co.uk
  * @author carldea
  */
 public class ButtonFun extends Application {

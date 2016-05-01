@@ -1,0 +1,2 @@
+mkdir mlib
+jar --create --file=mlib/chap06.jar -C classpath .

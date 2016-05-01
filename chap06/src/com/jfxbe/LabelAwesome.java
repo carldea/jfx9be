@@ -110,7 +110,7 @@ public class LabelAwesome extends Application {
         iconPackList.add("OctIcon");
         iconPackList.add("WeatherIcon");
         ObservableList<String> obsIconPackList = FXCollections.observableList(iconPackList);
-        ComboBox<String> iconPacks = new ComboBox(obsIconPackList);
+        ComboBox<String> iconPacks = new ComboBox<>(obsIconPackList);
         iconPacks.setValue(iconPackList.get(0));
         controlsPanel.getChildren().add(iconPacks);
 

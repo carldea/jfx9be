@@ -1,0 +1,2 @@
+mkdir classpath
+javac -cp lib/fontawesomefx-8.9.jar -d classpath src/com/jfxbe/*.java
