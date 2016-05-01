@@ -1,0 +1,6 @@
+./clean
+./compile
+./run
+
+
+
