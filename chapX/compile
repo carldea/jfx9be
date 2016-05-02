@@ -1,0 +1,2 @@
+mkdir classpath
+javac -d classpath src/com/jfxbe/*.java
