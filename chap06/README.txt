@@ -11,3 +11,8 @@
 
 java -cp mlib/chap06.jar:lib/fontawesomefx-8.9.jar com.jfxbe.LabelAwesome
 java -cp mlib/chap06.jar com.jfxbe.ButtonFun
+java -cp mlib/chap06.jar com.jfxbe.KeyCombinationsAndContextMenus
+java -cp mlib/chap06.jar com.jfxbe.BossesAndEmployees
+java -cp mlib/chap06.jar com.jfxbe.BackgroundProcesses
+java -cp mlib/chap06.jar com.jfxbe.HeroPicker
+java -cp mlib/chap06.jar com.jfxbe.MenusExample
