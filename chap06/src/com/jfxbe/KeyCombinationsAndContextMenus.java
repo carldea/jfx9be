@@ -99,17 +99,19 @@ public class KeyCombinationsAndContextMenus extends Application {
 
         fileMenu.getItems().add(exitItem);
 
-        ContextMenu contextFileMenu = new ContextMenu(exitItem);
+        MenuItem contextExitItem = new MenuItem("Exit");
+        contextExitItem.setAccelerator(exitItem.getAccelerator());
+        contextExitItem.setOnAction(exitItem.getOnAction());
+
+        ContextMenu contextFileMenu = new ContextMenu(contextExitItem);
 
         primaryStage.addEventHandler(MouseEvent.MOUSE_CLICKED, (MouseEvent me) -> {
             if (me.getButton() == MouseButton.SECONDARY) {
-                System.out.println("Right mouse button click");
                 contextFileMenu.show(root, me.getScreenX(), me.getScreenY());
             } else {
                 contextFileMenu.hide();
             }
         });
-
 
         primaryStage.setScene(scene);
         primaryStage.show();
