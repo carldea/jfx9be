@@ -28,14 +28,14 @@ public class DrawingShapes extends Application {
 
         // Sine wave
         CubicCurve cubicCurve = new CubicCurve(
-                50,  // start x point
-                75,  // start y point
-                80,  // control x1 point
-                -25, // control y1 point
-                110, // control x2 point
-                175, // control y2 point
-                140, // end x point
-                75); // end y point
+                50,  /* start x point */
+                75,  /* start y point */
+                80,  /* control x1 point */
+                -25, /* control y1 point */
+                110, /* control x2 point */
+                175, /* control y2 point */
+                140, /* end x point */
+                75); /* end y point */
         cubicCurve.setStrokeType(StrokeType.CENTERED);
         cubicCurve.setStroke(Color.BLACK);
         cubicCurve.setStrokeWidth(3);
@@ -82,12 +82,12 @@ public class DrawingShapes extends Application {
         
         // A smile
         QuadCurve quad = new QuadCurve(
-                50, // start x point
-                50, // start y point
-                125,// control x point
-                150,// control y point
-                150,// end x point
-                50);// end y point
+                50, /* start x point */
+                50, /* start y point */
+                125,/* control x point */
+                150,/* control y point */
+                150,/* end x point */
+                50);/* end y point */
         quad.setTranslateY(path.getBoundsInParent().getMaxY());
         quad.setStrokeWidth(3);
         quad.setStroke(Color.BLACK);
@@ -97,20 +97,20 @@ public class DrawingShapes extends Application {
         
         // outer donut
         Ellipse bigCircle = new Ellipse(
-                100,   // center x
-                100,   // center y
-                50,    // radius x
-                75/2); // radius y
+                100,   /* center x */
+                100,   /* center y */
+                50,    /* radius x */
+                75/2); /* radius y */
         bigCircle.setStrokeWidth(3);
         bigCircle.setStroke(Color.BLACK);
         bigCircle.setFill(Color.WHITE);
                 
         // donut hole
         Ellipse smallCircle = new Ellipse(
-                100,   // center x
-                100,   // center y
-                35/2,  // radius x
-                25/2); // radius y
+                100,   /* center x */
+                100,   /* center y */
+                35/2,  /* radius x */
+                25/2); /* radius y */
                 
         // make a donut
         Shape donut = Path.subtract(bigCircle, smallCircle);
@@ -122,9 +122,9 @@ public class DrawingShapes extends Application {
         
         // add drop shadow
         DropShadow dropShadow = new DropShadow(
-            5,    // radius
-            2.0f, // offset X
-            2.0f, // offset Y
+            5,    /* radius */
+            2.0f, /* offset X */
+            2.0f, /* offset Y */
             Color.rgb(50, 50, 50, .588));
         
         donut.setEffect(dropShadow);

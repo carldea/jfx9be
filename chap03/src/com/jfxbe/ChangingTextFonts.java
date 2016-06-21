@@ -30,11 +30,9 @@ public class ChangingTextFonts extends Application {
 
         System.out.println("Font families: ");
         Font.getFamilies()
-            .stream()
             .forEach( i -> System.out.println(i));
         System.out.println("Font names: ");
         Font.getFontNames()
-            .stream()
             .forEach( i -> System.out.println(i));
 
         Group root = new Group();

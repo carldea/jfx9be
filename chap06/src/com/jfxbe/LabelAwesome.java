@@ -51,11 +51,11 @@ public class LabelAwesome extends Application {
         Font.loadFont(GlyphsDude.class.getResource(WeatherIconView.TTF_PATH).openStream(), 10.0);
 
         // Prepare all icons
-        ICON_PACKS_MAP.put("FontAwesomeIcon", new ArrayList<>(Arrays.asList(FontAwesomeIcon.values())));
-        ICON_PACKS_MAP.put("MaterialDesignIcon", new ArrayList<>(Arrays.asList(MaterialDesignIcon.values())));
-        ICON_PACKS_MAP.put("MaterialIcon", new ArrayList<>(Arrays.asList(MaterialIcon.values())));
-        ICON_PACKS_MAP.put("OctIcon", new ArrayList<>(Arrays.asList(OctIcon.values())));
-        ICON_PACKS_MAP.put("WeatherIcon", new ArrayList<>(Arrays.asList(WeatherIcon.values())));
+        ICON_PACKS_MAP.put("FontAwesomeIcon", Arrays.asList(FontAwesomeIcon.values()));
+        ICON_PACKS_MAP.put("MaterialDesignIcon", Arrays.asList(MaterialDesignIcon.values()));
+        ICON_PACKS_MAP.put("MaterialIcon", Arrays.asList(MaterialIcon.values()));
+        ICON_PACKS_MAP.put("OctIcon", Arrays.asList(OctIcon.values()));
+        ICON_PACKS_MAP.put("WeatherIcon", Arrays.asList(WeatherIcon.values()));
     }
 
     /**
@@ -72,7 +72,7 @@ public class LabelAwesome extends Application {
         BorderPane root = new BorderPane();
         Scene scene = new Scene(root, 600, 450);
 
-        // Banner
+        // Create Title
         Text labelText = new Text("Label ");
         labelText.setFont(Font.font("Helvetica", FontWeight.EXTRA_LIGHT, 60));
         Text awesomeText = new Text("Awesome");
@@ -97,9 +97,6 @@ public class LabelAwesome extends Application {
         root.setCenter(scrollPane);
         scrollPane.setPadding(new Insets(10, 10, 10, 10));
 
-
-        // Control Panel Area
-
         // Select Icons packs (ComboBox)
         VBox controlsPanel = new VBox(10);
         controlsPanel.setPadding(new Insets(10, 10, 10, 10));
@@ -109,6 +106,7 @@ public class LabelAwesome extends Application {
         iconPackList.add("MaterialIcon");
         iconPackList.add("OctIcon");
         iconPackList.add("WeatherIcon");
+
         ObservableList<String> obsIconPackList = FXCollections.observableList(iconPackList);
         ComboBox<String> iconPacks = new ComboBox<>(obsIconPackList);
         iconPacks.setValue(iconPackList.get(0));
@@ -141,8 +139,13 @@ public class LabelAwesome extends Application {
         rightPosition.setUserData("RIGHT");
         rightPosition.setToggleGroup(position);
 
-        imagePositionPanel.getChildren().addAll(topPosition, bottomPosition, leftPosition, rightPosition);
-        controlsPanel.getChildren().add(imagePositionPanel);
+        imagePositionPanel.getChildren()
+                          .addAll(topPosition,
+                            bottomPosition,
+                            leftPosition,
+                            rightPosition);
+        controlsPanel.getChildren()
+                     .add(imagePositionPanel);
 
         root.setLeft(controlsPanel);
 
@@ -202,9 +205,12 @@ public class LabelAwesome extends Application {
                 .filter(iconEnum -> iconEnum.toString().toUpperCase()
                         .indexOf(textInput.toUpperCase()) > -1)
                 .forEach(iconEnum -> {
+                    // create a text node using the vector font.
                     Text iconShape = new Text(iconEnum.characterToString());
                     iconShape.getStyleClass().add("glyph-icon");
-                    iconShape.setStyle(String.format("-fx-font-family: %s; -fx-font-size: %s;", iconEnum.getFontFamily(), 20));
+                    iconShape.setStyle(
+                            String.format("-fx-font-family: %s; -fx-font-size: %s;",
+                            iconEnum.getFontFamily(), 20));
                     Label label = new Label(iconEnum.toString(), iconShape);
                     label.setContentDisplay(ContentDisplay.valueOf(position));
                     labelDisplayPanel.getChildren().add(label);
