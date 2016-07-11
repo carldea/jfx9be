@@ -123,20 +123,20 @@ public class LabelAwesome extends Application {
         ToggleGroup position = new ToggleGroup();
         RadioButton topPosition = new RadioButton("Top");
         topPosition.setSelected(true);
-        topPosition.setUserData("TOP");
+        topPosition.setUserData(ContentDisplay.TOP);
         topPosition.requestFocus();
         topPosition.setToggleGroup(position);
 
         RadioButton bottomPosition = new RadioButton("Bottom");
-        bottomPosition.setUserData("BOTTOM");
+        bottomPosition.setUserData(ContentDisplay.BOTTOM);
         bottomPosition.setToggleGroup(position);
 
         RadioButton leftPosition = new RadioButton("Left");
-        leftPosition.setUserData("LEFT");
+        leftPosition.setUserData(ContentDisplay.LEFT);
         leftPosition.setToggleGroup(position);
 
         RadioButton rightPosition = new RadioButton("Right");
-        rightPosition.setUserData("RIGHT");
+        rightPosition.setUserData(ContentDisplay.RIGHT);
         rightPosition.setToggleGroup(position);
 
         imagePositionPanel.getChildren()
@@ -154,8 +154,7 @@ public class LabelAwesome extends Application {
             showIconList(newVal,labelDisplayPanel,
                     iconPacks.getValue(),
                     position.getSelectedToggle()
-                            .getUserData()
-                            .toString())
+                            .getUserData())
         );
 
         // When the radio button select Position to place the Icon
@@ -164,9 +163,7 @@ public class LabelAwesome extends Application {
                     labelDisplayPanel,
                     iconPacks.getValue(),
                     position.getSelectedToggle()
-                            .getUserData()
-                            .toString())
-        );
+                            .getUserData()));
 
         // When Combo box chooses an Icon pack.
         iconPacks.setOnAction(actionEvent ->
@@ -174,8 +171,7 @@ public class LabelAwesome extends Application {
                     labelDisplayPanel,
                     iconPacks.getValue(),
                     position.getSelectedToggle()
-                            .getUserData()
-                            .toString()));
+                            .getUserData()));
 
         stage.setScene(scene);
         stage.show();
@@ -185,15 +181,14 @@ public class LabelAwesome extends Application {
                 labelDisplayPanel,
                 iconPacks.getValue(),
                 position.getSelectedToggle()
-                        .getUserData()
-                        .toString());
+                        .getUserData());
 
     }
 
     private void showIconList(String textInput,
                               VBox labelDisplayPanel,
                               String iconPack,
-                              String position) {
+                              Object position) {
 
         // Clear the right display
         labelDisplayPanel.getChildren().clear();
@@ -212,7 +207,7 @@ public class LabelAwesome extends Application {
                             String.format("-fx-font-family: %s; -fx-font-size: %s;",
                             iconEnum.getFontFamily(), 20));
                     Label label = new Label(iconEnum.toString(), iconShape);
-                    label.setContentDisplay(ContentDisplay.valueOf(position));
+                    label.setContentDisplay((ContentDisplay)position);
                     labelDisplayPanel.getChildren().add(label);
                 });
     }

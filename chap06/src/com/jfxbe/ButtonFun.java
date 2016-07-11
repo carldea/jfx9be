@@ -3,15 +3,22 @@ package com.jfxbe;
 import javafx.animation.Interpolator;
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
+import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Arc;
+import javafx.scene.shape.ArcType;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -21,7 +28,7 @@ import javafx.util.Duration;
  * @author carldea
  */
 public class ButtonFun extends Application {
-
+    private Car[] myCars;
     /**
      * @param args the command line arguments
      */
@@ -30,10 +37,36 @@ public class ButtonFun extends Application {
     }
 
     @Override
+    public void init() throws Exception {
+        super.init();
+        myCars = new Car[3];
+
+        Car workCar = buildCar("/spr_bluecar_0_0.png", "/spr_bluecar_0_0-backwards.png",
+                "Select this car to drive to work.");
+        Car sportsCar = buildCar("/sportscar.png", "/sportscar-backwards.png",
+                "Select this car to drive to the theater.");
+        Car travelVan = buildCar("/travel_vehicle.png", "/travel_vehicle.png",
+                "Select this vehicle to go on vacation.");
+
+        myCars[0] = workCar;
+        myCars[1] = sportsCar;
+        myCars[2] = travelVan;
+    }
+
+    private Car buildCar(String carForwardFile, String carBackwardFile, String description) {
+        Image carGoingForward = new Image(carForwardFile);
+        Image carBackward = new Image(carBackwardFile);
+        return new Car(carGoingForward, carBackward, description);
+    }
+
+    @Override
     public void start(Stage stage) {
+
         stage.setTitle("Button Fun");
+
         BorderPane root = new BorderPane();
         root.setId("background");
+
         Scene scene = new Scene(root, 900, 250);
 
         // load JavaFX CSS style
@@ -44,29 +77,41 @@ public class ButtonFun extends Application {
 
         leftControlPane.setPadding(new Insets(0, 10, 20, 15));
 
+
         // Create radio buttons for linear,
         // ease in and ease out
         ToggleGroup group = new ToggleGroup();
 
-        RadioButton easeLinearBtn = new RadioButton("Linear");
-        easeLinearBtn.setUserData(Interpolator.LINEAR);
-        easeLinearBtn.getStyleClass().add("easing-option-button");
+        RadioButton easeLinearBtn = new RadioButton("Work Car");
+        easeLinearBtn.setUserData(myCars[0]);
+        easeLinearBtn.getStyleClass().add("option-button");
         easeLinearBtn.setSelected(true);
         easeLinearBtn.setToggleGroup(group);
 
-        RadioButton easeInBtn = new RadioButton("Ease In");
-        easeInBtn.setUserData(Interpolator.EASE_IN);
-        easeInBtn.getStyleClass().add("easing-option-button");
+        RadioButton easeInBtn = new RadioButton("Weekend Car");
+        easeInBtn.setUserData(myCars[1]);
+        easeInBtn.getStyleClass().add("option-button");
         easeInBtn.setToggleGroup(group);
 
-        RadioButton easeOutBtn = new RadioButton("Ease Out");
-        easeOutBtn.setUserData(Interpolator.EASE_OUT);
-        easeOutBtn.getStyleClass().add("easing-option-button");
+        RadioButton easeOutBtn = new RadioButton("Travel Van");
+        easeOutBtn.setUserData(myCars[2]);
+        easeOutBtn.getStyleClass().add("option-button");
         easeOutBtn.setToggleGroup(group);
+
+
+        // hyperlink
+        Hyperlink carInfoLink = createHyperLink(group);
+
+        leftControlPane.getChildren().add(carInfoLink);
+
+        // Create check boxes to turn lights on or off.
+        CheckBox headLightsCheckBox = new CheckBox("Headlights on");
+
+        leftControlPane.getChildren().add(headLightsCheckBox);
 
         leftControlPane.setAlignment(Pos.BOTTOM_LEFT);
         leftControlPane.getChildren().addAll(easeLinearBtn, easeInBtn, easeOutBtn);
-        root.setLeft(leftControlPane);
+
 
         // Create button controls to move car forward or backward.
         HBox hbox = new HBox(10);
@@ -84,76 +129,133 @@ public class ButtonFun extends Application {
         AnchorPane surface = new AnchorPane();
         root.setCenter(surface);
 
-        Image carBackward = new Image("/spr_bluecar_0_0-backwards.png");
-        Image carGoingForward = new Image("/spr_bluecar_0_0.png");
-
-        Image sportCarBackward = new Image("/sportscar-backwards.png");
-        Image sportCarGoingForward = new Image("/sportscar.png");
-
+        root.setLeft(leftControlPane);
         int x1 = 20, x2 = 500;
         int y1 = 100, y2 = 100;
 
-        // Linear car (regular)
-        ImageView carView1 = new ImageView(carGoingForward);
-        carView1.setPreserveRatio(true);
-        carView1.setFitWidth(150);
-        carView1.setX(x1);
-
-        AnchorPane.setBottomAnchor(carView1, 100.0);
-        surface.getChildren().add(carView1);
-
-        // Easing car (sports car)
-        ImageView carView2 = new ImageView(sportCarGoingForward);
+        ImageView carView2 = new ImageView(myCars[0].carForwards);
         carView2.setPreserveRatio(true);
         carView2.setFitWidth(150);
         carView2.setX(x1);
 
-        AnchorPane.setBottomAnchor(carView2, 20.0);
-        surface.getChildren().add(carView2);
+        Arc carHeadlights1 = new Arc();
+        carHeadlights1.setId("car-headlights-1");
+        carHeadlights1.setCenterX(50.0f);
+        carHeadlights1.setCenterY(90.0f);
+        carHeadlights1.setRadiusX(300.0f);
+        carHeadlights1.setRadiusY(300.0f);
+        carHeadlights1.setStartAngle(170.0f);
+        carHeadlights1.setLength(15f);
+        carHeadlights1.setType(ArcType.ROUND);
+        carHeadlights1.visibleProperty().bind(headLightsCheckBox.selectedProperty());
 
-        // Linear animation of the car to compare against
-        TranslateTransition animate1 = new TranslateTransition(Duration.millis(400), carView1);
-        animate1.toXProperty().set(x2);
-        animate1.setInterpolator(Interpolator.LINEAR);
-        animate1.setDelay(Duration.millis(100));
+        // Easing car (sports car)
+        AnchorPane.setBottomAnchor(carView2, 20.0);
+        AnchorPane.setBottomAnchor(carHeadlights1, 20.0);
+        AnchorPane carPane = new AnchorPane(carHeadlights1, carView2);
+
+
+        AnchorPane.setBottomAnchor(carPane, 20.0);
+        surface.getChildren().add(carPane);
 
         // The animation based on the currently selected radio buttons.
-        TranslateTransition animate2 = new TranslateTransition(Duration.millis(400), carView2);
+        TranslateTransition animate2 = new TranslateTransition(Duration.millis(400), carPane);
         animate2.setInterpolator(Interpolator.LINEAR);
         animate2.toXProperty().set(x2);
-        animate2.setInterpolator((Interpolator) group.getSelectedToggle().getUserData());
+        //animate2.setInterpolator((Interpolator) group.getSelectedToggle().getUserData());
         animate2.setDelay(Duration.millis(100));
 
         // Go forward (Left)
+        leftBtn.setTooltip(new Tooltip("Drive forward"));
         leftBtn.setOnAction( ae -> {
-            animate1.stop();
-            carView1.setImage(carGoingForward);
-            animate1.toXProperty().set(x1);
-            animate1.playFromStart();
-
             animate2.stop();
-            carView2.setImage(sportCarGoingForward);
-            animate2.setInterpolator((Interpolator) group.getSelectedToggle().getUserData());
+            Car selectedCar = (Car) group.getSelectedToggle().getUserData();
+            carView2.setImage(selectedCar.carForwards);
             animate2.toXProperty().set(x1);
             animate2.playFromStart();
 
         });
 
         // Go backward (Right)
+        rightBtn.setTooltip(new Tooltip("Drive backward"));
         rightBtn.setOnAction( ae -> {
-            animate1.stop();
-            carView1.setImage(carBackward);
-            animate1.toXProperty().set(x2);
-            animate1.playFromStart();
-
             animate2.stop();
-            carView2.setImage(sportCarBackward);
-            animate2.setInterpolator((Interpolator) group.getSelectedToggle().getUserData());
+            Car selectedCar = (Car) group.getSelectedToggle().getUserData();
+            carView2.setImage(selectedCar.carBackwards);
             animate2.toXProperty().set(x2);
             animate2.playFromStart();
+        });
+        group.selectedToggleProperty().addListener((ob, oldVal, newVal) -> {
+            Car selectedCar = (Car) newVal.getUserData();
+            System.out.println("selected car: " + selectedCar.carDescription);
+            carView2.setImage(selectedCar.carForwards);
         });
 
         stage.setScene(scene);
         stage.show();
     }
+
+    private Hyperlink createHyperLink(ToggleGroup chosenCarToggle) {
+        Hyperlink carInfoLink = new Hyperlink("Car Information");
+        Popup carInfoPopup = new Popup();
+        carInfoPopup.getScene().getStylesheets()
+                .add(getClass().getResource("/button-fun.css")
+                               .toExternalForm());
+
+        carInfoPopup.setAutoHide(true);
+        carInfoPopup.setHideOnEscape(true);
+        Arc pointer = new Arc(0, 0, 20, 20, -20, 40);
+        pointer.setType(ArcType.ROUND);
+        Rectangle msgRect = new Rectangle( 18, -20, 200.5, 150);
+
+
+        Shape msgBubble = Shape.union(pointer, msgRect);
+        msgBubble.getStyleClass().add("message-bubble");
+
+        TextFlow textMsg = new TextFlow();
+        textMsg.setPrefWidth(msgRect.getWidth() -5);
+        textMsg.setPrefHeight(msgRect.getHeight() -5);
+        textMsg.setLayoutX(pointer.getBoundsInLocal().getWidth()+5);
+        textMsg.setLayoutY(msgRect.getLayoutY() + 5);
+
+        Text descr = new Text();
+        descr.setFill(Color.ORANGE);
+        textMsg.getChildren().add(descr);
+
+        // whenever a selected car set the text.
+        chosenCarToggle.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
+            Car selectedCar = (Car) newVal.getUserData();
+            descr.setText(selectedCar.carDescription);
+        });
+
+        carInfoPopup.getContent().addAll(msgBubble, textMsg);
+
+        carInfoLink.setOnAction(actionEvent -> {
+            Bounds linkBounds = carInfoLink.localToScreen(carInfoLink.getBoundsInLocal());
+            carInfoPopup.show(carInfoLink, linkBounds.getMaxX(), linkBounds.getMinY() -10);
+        });
+        return carInfoLink;
+    }
+}
+
+class Car {
+
+    String carDescription;
+    Image carBackwards;
+    Image carForwards;
+
+    public Car(){};
+
+    public Car(Image carForwards, Image carBackwards, String desc) {
+        this.carForwards = carForwards;
+        this.carBackwards = carBackwards;
+        this.carDescription = desc;
+    }
+}
+class CarBuilder {
+    private Car car;
+    public CarBuilder create() {
+        return new CarBuilder();
+    }
+
 }

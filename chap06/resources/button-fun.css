@@ -9,7 +9,9 @@
    /*-fx-background-color: linear-gradient(to bottom right, #3b3b43, #202020 80%, #151515);*/
    -fx-background-color: #3b3b43;
 }
-
+#car-headlights-1 {
+    -fx-fill: rgba(255,255,153, 0.8);
+}
 .nav-button {
     -fx-background-color:
         #000000,
@@ -38,7 +40,7 @@
             linear-gradient(-dark-green, -mid-green, -light-green);
 }
 
-.easing-option-button .dot {
+.option-button .dot {
     -fx-background-radius: 0%;
 }
 
@@ -53,10 +55,10 @@
    -fx-padding: 0.333333em; /* 4 -- padding from outside edge to the inner black dot */
 }
 .radio-button:selected .dot {
-   -fx-background-color: linear-gradient(-light-green, -mid-green, -dark-green);;
+   -fx-background-color: linear-gradient(-light-green, -mid-green, -dark-green);
    -fx-background-insets: 0 0 -1 0;
 }
-.easing-option-button {
+.option-button {
 /*    -fx-background-color:
         #000000,
         rgba(255,255,255, 0.8),
@@ -72,3 +74,35 @@
 
 }
 
+.check-box {
+    -fx-background-radius: 0%;
+    -fx-font-family: 'Arial Black';
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+}
+
+.check-box .box {
+    -fx-background-color: rgba(0,0,0, 0.0), #000000, #000000, #090909;
+    -fx-background-insets: 0 0 -1 0,  0,  1,  2;
+    -fx-background-radius: 3; /* large value to make sure this remains circular */
+    -fx-padding: 0.333333em; /* 4 -- padding from outside edge to the inner black dot */
+}
+
+.check-box:selected .mark {
+    -fx-background-color: linear-gradient(-light-green, -mid-green, -dark-green);;
+    -fx-background-insets: 0 0 -1 0;
+}
+
+.hyperlink {
+    -fx-background-radius: 0%;
+    -fx-font-family: 'Arial Black';
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+    -fx-border-color: -mid-green;
+}
+.message-bubble {
+    -fx-fill: rgba(0,0,0, .8);
+    -fx-stroke: #85ab32;
+}
