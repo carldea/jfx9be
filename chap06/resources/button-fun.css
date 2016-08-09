@@ -31,6 +31,7 @@
             #000000,
             rgba(255,255,255, 0.8),
             linear-gradient(-light-green, -mid-green, -dark-green);
+    -fx-effect: dropshadow( gaussian , -light-green , 10, 0.0 , 0 , 0 );
 }
 
 .nav-button:pressed {

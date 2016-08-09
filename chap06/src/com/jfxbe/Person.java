@@ -1,5 +1,7 @@
 package com.jfxbe;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -10,13 +12,26 @@ import javafx.collections.ObservableList;
  * @author cdea
  */
 public class Person {
-
+    public enum MOOD_TYPES {
+        Happy,
+        Sad,
+        Angry,
+        Positive
+    }
     private StringProperty aliasName;
     private StringProperty firstName;
-    private StringProperty lastName;    
+    private StringProperty lastName;
+    private ObjectProperty<MOOD_TYPES> mood;
+
     private ObservableList<Person> employees = FXCollections.observableArrayList();
 
-    
+    public Person(String alias, String firstName, String lastName, MOOD_TYPES mood) {
+        setAliasName(alias);
+        setFirstName(firstName);
+        setLastName(lastName);
+        setMood(mood);
+    }
+
     public final void setAliasName(String value) {
         aliasNameProperty().set(value);
     }
@@ -31,7 +46,7 @@ public class Person {
         }
         return aliasName;
     }
-    
+
     public final void setFirstName(String value) {
         firstNameProperty().set(value);
     }
@@ -61,16 +76,23 @@ public class Person {
         }
         return lastName;
     }
-    
+
+    public final void setMood(MOOD_TYPES value) {
+        moodProperty().set(value);
+    }
+
+    public final MOOD_TYPES getMood() {
+        return moodProperty().get();
+    }
+
+    public ObjectProperty<MOOD_TYPES> moodProperty() {
+        if (mood == null) {
+            mood = new SimpleObjectProperty<>(MOOD_TYPES.Happy);
+        }
+        return mood;
+    }
 
     public ObservableList<Person> employeesProperty() {
         return employees;
     }
-
-    public Person(String alias, String firstName, String lastName) {
-        setAliasName(alias);
-        setFirstName(firstName);
-        setLastName(lastName);
-    }
-    
 }

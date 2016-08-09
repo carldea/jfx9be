@@ -24,7 +24,7 @@ import javafx.util.Duration;
 
 /**
  * Button Fun is an app showing typical buttons used in application development.
- * Car sprites are from http://www.chasersgaming.co.uk
+ * Car sprites are from http://opengameart.org/users/chasersgaming
  * @author carldea
  */
 public class ButtonFun extends Application {
@@ -133,62 +133,62 @@ public class ButtonFun extends Application {
         int x1 = 20, x2 = 500;
         int y1 = 100, y2 = 100;
 
-        ImageView carView2 = new ImageView(myCars[0].carForwards);
-        carView2.setPreserveRatio(true);
-        carView2.setFitWidth(150);
-        carView2.setX(x1);
+        ImageView carView = new ImageView(myCars[0].carForwards);
+        carView.setPreserveRatio(true);
+        carView.setFitWidth(150);
+        carView.setX(x1);
 
-        Arc carHeadlights1 = new Arc();
-        carHeadlights1.setId("car-headlights-1");
-        carHeadlights1.setCenterX(50.0f);
-        carHeadlights1.setCenterY(90.0f);
-        carHeadlights1.setRadiusX(300.0f);
-        carHeadlights1.setRadiusY(300.0f);
-        carHeadlights1.setStartAngle(170.0f);
-        carHeadlights1.setLength(15f);
-        carHeadlights1.setType(ArcType.ROUND);
-        carHeadlights1.visibleProperty().bind(headLightsCheckBox.selectedProperty());
+        Arc carHeadlights = new Arc();
+        carHeadlights.setId("car-headlights-1");
+        carHeadlights.setCenterX(50.0f);
+        carHeadlights.setCenterY(90.0f);
+        carHeadlights.setRadiusX(300.0f);
+        carHeadlights.setRadiusY(300.0f);
+        carHeadlights.setStartAngle(170.0f);
+        carHeadlights.setLength(15f);
+        carHeadlights.setType(ArcType.ROUND);
+        carHeadlights.visibleProperty().bind(headLightsCheckBox.selectedProperty());
 
         // Easing car (sports car)
-        AnchorPane.setBottomAnchor(carView2, 20.0);
-        AnchorPane.setBottomAnchor(carHeadlights1, 20.0);
-        AnchorPane carPane = new AnchorPane(carHeadlights1, carView2);
+        AnchorPane.setBottomAnchor(carView, 20.0);
+        AnchorPane.setBottomAnchor(carHeadlights, 20.0);
+        AnchorPane carPane = new AnchorPane(carHeadlights, carView);
 
 
         AnchorPane.setBottomAnchor(carPane, 20.0);
         surface.getChildren().add(carPane);
 
         // The animation based on the currently selected radio buttons.
-        TranslateTransition animate2 = new TranslateTransition(Duration.millis(400), carPane);
-        animate2.setInterpolator(Interpolator.LINEAR);
-        animate2.toXProperty().set(x2);
-        //animate2.setInterpolator((Interpolator) group.getSelectedToggle().getUserData());
-        animate2.setDelay(Duration.millis(100));
+        TranslateTransition animateCar = new TranslateTransition(Duration.millis(400), carPane);
+        animateCar.setInterpolator(Interpolator.LINEAR);
+        animateCar.toXProperty().set(x2);
+        //animateCar.setInterpolator((Interpolator) group.getSelectedToggle().getUserData());
+        animateCar.setDelay(Duration.millis(100));
 
         // Go forward (Left)
         leftBtn.setTooltip(new Tooltip("Drive forward"));
         leftBtn.setOnAction( ae -> {
-            animate2.stop();
+            animateCar.stop();
             Car selectedCar = (Car) group.getSelectedToggle().getUserData();
-            carView2.setImage(selectedCar.carForwards);
-            animate2.toXProperty().set(x1);
-            animate2.playFromStart();
+            carView.setImage(selectedCar.carForwards);
+            animateCar.toXProperty().set(x1);
+            animateCar.playFromStart();
 
         });
 
         // Go backward (Right)
         rightBtn.setTooltip(new Tooltip("Drive backward"));
         rightBtn.setOnAction( ae -> {
-            animate2.stop();
+            animateCar.stop();
             Car selectedCar = (Car) group.getSelectedToggle().getUserData();
-            carView2.setImage(selectedCar.carBackwards);
-            animate2.toXProperty().set(x2);
-            animate2.playFromStart();
+            carView.setImage(selectedCar.carBackwards);
+            animateCar.toXProperty().set(x2);
+            animateCar.playFromStart();
         });
         group.selectedToggleProperty().addListener((ob, oldVal, newVal) -> {
             Car selectedCar = (Car) newVal.getUserData();
             System.out.println("selected car: " + selectedCar.carDescription);
-            carView2.setImage(selectedCar.carForwards);
+            carView.setImage(selectedCar.carForwards);
         });
 
         stage.setScene(scene);
@@ -251,11 +251,4 @@ class Car {
         this.carBackwards = carBackwards;
         this.carDescription = desc;
     }
-}
-class CarBuilder {
-    private Car car;
-    public CarBuilder create() {
-        return new CarBuilder();
-    }
-
 }

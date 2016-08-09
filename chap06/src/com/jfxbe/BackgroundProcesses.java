@@ -1,6 +1,5 @@
 package com.jfxbe;
 
-import java.util.Random;
 import javafx.application.Application;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
@@ -8,15 +7,15 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+
+import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  *
@@ -26,12 +25,24 @@ public class BackgroundProcesses extends Application {
     
     static Task<Boolean> copyWorker;
     final int numFiles = 30;
-
+    private ExecutorService threadPool;
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
         Application.launch(args);
+    }
+
+    @Override
+    public void init() throws Exception {
+        super.init();
+        threadPool = Executors.newFixedThreadPool(1);
+    }
+
+    @Override
+    public void stop() throws Exception {
+        super.stop();
+        threadPool.shutdown();
     }
 
     @Override
@@ -86,7 +97,7 @@ public class BackgroundProcesses extends Application {
                 textArea.appendText(newValue + "\n");
             });
 
-            new Thread(copyWorker).start();
+            threadPool.submit(copyWorker);
         });
 
         // cancel button will kill worker and reset.
