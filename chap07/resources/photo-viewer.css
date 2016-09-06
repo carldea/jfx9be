@@ -1,0 +1,41 @@
+/*
+File: photo-viewer.css
+Book: JavaFX 9 Introduction by Example by Apress publishing
+Info: Graphics part 1
+Author: Carl Dea
+*/
+.root {
+    -fx-background-color: rgba(0, 0, 0, .75);
+    -arrow-fill: rgba(255, 255, 255, .90);
+    -arrow-fill-hover: rgba(71, 241, 255, .90);
+    -blur-effect-hover: dropshadow(gaussian, rgba(255, 255, 255, .90), 10, .3, 0, 0 );
+}
+.button-pane {
+    -fx-min-width: 60;
+    -fx-max-width: 60;
+    -fx-pref-width: 60;
+    -fx-min-height: 30;
+    -fx-max-height: 30;
+    -fx-pref-height: 30;
+    -fx-border-radius: 7.5;
+    -fx-background-radius: 7.5;
+    -fx-background-color: rgba(0,0,0, .55);
+    -fx-border-width: 1.5;
+    -fx-border-color: white;
+}
+.left-arrow {
+    -fx-fill: -arrow-fill;
+}
+.left-arrow:hover {
+    -fx-fill: -arrow-fill-hover;
+    -fx-effect: -blur-effect-hover;
+}
+
+.right-arrow {
+    -fx-fill: -arrow-fill;
+}
+.right-arrow:hover {
+    -fx-fill: -arrow-fill-hover;
+    -fx-effect: -blur-effect-hover;
+}
+
