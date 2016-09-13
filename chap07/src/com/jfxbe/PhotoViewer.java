@@ -36,7 +36,7 @@ import java.util.logging.Logger;
  * <p>
  * Instructions:
  *    1. Drag and drop an image file onto the application window.
- *    1a. Alternatively, you may use the file menu.
+ *    1a. Alternatively, you may use the file chooser from the menu.
  *    2. Repeat step 1 so more than 2 images are loaded.
  *    3. Click the left and right arrow controls to advance.
  * </p>  
@@ -84,16 +84,14 @@ public class PhotoViewer extends Application {
         // sizing and positioning container
         StackPane.setAlignment(currentImageView, Pos.TOP_CENTER);
         StackPane imageFrame = new StackPane(currentImageView);
-        imageFrame.prefWidthProperty().bind(scene.widthProperty());
-        imageFrame.prefHeightProperty().bind(scene.heightProperty());
+        //imageFrame.prefWidthProperty().bind(scene.widthProperty());
+        //imageFrame.prefHeightProperty().bind(scene.heightProperty());
+
         // Setup drag and drop file capabilities
         setupDragNDrop(scene);
 
         // Create a progress indicator
         progressIndicator = createProgressIndicator();
-
-        // place progress indicator on top of image view (centered)
-        imageFrame.getChildren().add(progressIndicator);
 
         // Create a button panel control having
         // left & right arrows buttons
@@ -102,7 +100,7 @@ public class PhotoViewer extends Application {
         double padding = 15d;
         Runnable repositionButtonPanel = () -> {
 
-            // Calculate from the top of the scene's height minus the menu bar height,
+            // Calculates the top of the scene's height minus the menu bar height,
             // minus the height of the button panel and lastly add the imagesBoundsMinY.
             // If imagesBoundsMinY is negative move button panel up otherwise its zero.
             //
@@ -111,21 +109,36 @@ public class PhotoViewer extends Application {
             // however the Group layout node will shift the stack pane node below the menu bar.
             // This will shift the button panel down on the Y axis. The topAnchor variable will calculate
             // the amount or difference to raise or lower the button panel.
-            double imageBoundsMinY = imageFrame.getBoundsInParent().getMinY();
-            double imageBoundsMinX = imageFrame.getBoundsInParent().getMinX();
+            double adjustY = imageFrame.getBoundsInParent().getMinY();
+            double adjustX = imageFrame.getBoundsInParent().getMinX();
 
             double topAnchor =
                 scene.getHeight() - root.getInsets().getTop() -
                 root.getTop().getBoundsInLocal().getHeight() -
-                buttonPanel.getLayoutBounds().getHeight() - padding + imageBoundsMinY;
+                buttonPanel.getLayoutBounds().getHeight() - padding + adjustY;
 
             double leftAnchor = scene.getWidth() - root.getInsets().getRight() -
-                    buttonPanel.getLayoutBounds().getWidth() - padding + imageBoundsMinX;
+                    buttonPanel.getLayoutBounds().getWidth() - padding + adjustX;
 
             LOGGER.log(Level.INFO, "(leftAnchor, topAnchor): (" + leftAnchor + ", " + topAnchor + ")");
 
-            buttonPanel.setTranslateX(leftAnchor);
-            buttonPanel.setTranslateY(topAnchor);
+            buttonPanel.setLayoutX(leftAnchor);
+            buttonPanel.setLayoutY(topAnchor);
+
+            // progress indicator
+            double topAnchorPi =
+                    scene.getHeight() -
+                            root.getInsets().getTop() -
+                            root.getTop().getBoundsInLocal().getHeight();
+
+            topAnchorPi = topAnchorPi /2 - (progressIndicator.getLayoutBounds().getHeight()/2) + adjustY;
+            double leftAnchorPi = scene.getWidth() - root.getInsets().getRight();
+            leftAnchorPi = leftAnchorPi/2 - (progressIndicator.getLayoutBounds().getWidth()/2) + adjustX;
+
+            LOGGER.log(Level.INFO, "(leftAnchorPInd, topAnchorPInd): (" + leftAnchorPi + ", " + topAnchorPi + ")");
+
+            progressIndicator.setLayoutX(leftAnchorPi);
+            progressIndicator.setLayoutY(topAnchorPi);
         };
 
         // Reposition the top anchor value for the button panel
@@ -145,7 +158,7 @@ public class PhotoViewer extends Application {
         root.setTop(new MenuBar(fileMenu, rotateMenu));
 
         // Create the center content of the root pane (Border)
-        mainContentPane.getChildren().addAll(imageFrame, buttonPanel);
+        mainContentPane.getChildren().addAll(imageFrame, progressIndicator, buttonPanel);
 
         // Make sure the center content is under the menu bar
         BorderPane.setAlignment(mainContentPane, Pos.TOP_CENTER);
