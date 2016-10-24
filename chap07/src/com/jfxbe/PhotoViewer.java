@@ -2,18 +2,21 @@ package com.jfxbe;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ProgressIndicator;
+import javafx.scene.SnapshotParameters;
+import javafx.scene.control.*;
+import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -22,12 +25,13 @@ import javafx.scene.shape.ArcType;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import javax.imageio.ImageIO;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,8 +53,10 @@ public class PhotoViewer extends Application {
 
     /** List of ImageInfo instances. */
     private final static List<ImageInfo> IMAGE_FILES = new Vector<>();
+
     /** The current index into the IMAGE_FILES list. */
     private int currentIndex = -1;
+
     /** Enumeration of next and previous button directions */
     public enum ButtonMove {NEXT, PREV};
 
@@ -59,10 +65,18 @@ public class PhotoViewer extends Application {
 
     /** Loading progress indicator */
     private ProgressIndicator progressIndicator;
-    /** Used indicated a task is still working */
+
+    /** Used to indicate a task is still working */
     private AtomicBoolean loading = new AtomicBoolean();
+
     /** A file chooser for the user to select image files to open. */
     private FileChooser fileChooser = new FileChooser();
+
+    private ObjectProperty<ColorAdjust> colorAdjustProperty = new SimpleObjectProperty<>();
+    enum COLOR_ADJ {
+        HUE, SATURATION, BRIGHTNESS, CONTRAST
+    }
+    private Map<COLOR_ADJ, Slider> SLIDER_MAP = new HashMap<>();
 
     @Override
     public void start(Stage primaryStage) {
@@ -106,7 +120,7 @@ public class PhotoViewer extends Application {
             //
             // When a transform occurs such as a 90 degrees rotation of a image view
             // node it will be outside of the stack pane's bounding region (BoundsInParent)
-            // however the Group layout node will shift the stack pane node below the menu bar.
+            // however the Group node will shift the stack pane node below the menu bar (Center border pane).
             // This will shift the button panel down on the Y axis. The topAnchor variable will calculate
             // the amount or difference to raise or lower the button panel.
             double adjustY = imageFrame.getBoundsInParent().getMinY();
@@ -120,7 +134,7 @@ public class PhotoViewer extends Application {
             double leftAnchor = scene.getWidth() - root.getInsets().getRight() -
                     buttonPanel.getLayoutBounds().getWidth() - padding + adjustX;
 
-            LOGGER.log(Level.INFO, "(leftAnchor, topAnchor): (" + leftAnchor + ", " + topAnchor + ")");
+            //LOGGER.log(Level.INFO, "(leftAnchor, topAnchor): (" + leftAnchor + ", " + topAnchor + ")");
 
             buttonPanel.setLayoutX(leftAnchor);
             buttonPanel.setLayoutY(topAnchor);
@@ -135,7 +149,7 @@ public class PhotoViewer extends Application {
             double leftAnchorPi = scene.getWidth() - root.getInsets().getRight();
             leftAnchorPi = leftAnchorPi/2 - (progressIndicator.getLayoutBounds().getWidth()/2) + adjustX;
 
-            LOGGER.log(Level.INFO, "(leftAnchorPInd, topAnchorPInd): (" + leftAnchorPi + ", " + topAnchorPi + ")");
+            //LOGGER.log(Level.INFO, "(leftAnchorPInd, topAnchorPInd): (" + leftAnchorPi + ", " + topAnchorPi + ")");
 
             progressIndicator.setLayoutX(leftAnchorPi);
             progressIndicator.setLayoutY(topAnchorPi);
@@ -155,8 +169,13 @@ public class PhotoViewer extends Application {
         // Create menus File and Rotate
         Menu fileMenu = createFileMenu(primaryStage);
         Menu rotateMenu = createRotateMenu();
-        root.setTop(new MenuBar(fileMenu, rotateMenu));
+        Menu colorAdjustMenu = createColorAdjustMenu();
+        root.setTop(new MenuBar(fileMenu, rotateMenu, colorAdjustMenu));
 
+//        colorAdjustProperty.addListener( (ob, ov, nv) -> {
+//            updateSliders(nv);
+//            currentImageView.setEffect(nv);
+//        });
         // Create the center content of the root pane (Border)
         mainContentPane.getChildren().addAll(imageFrame, progressIndicator, buttonPanel);
 
@@ -167,44 +186,6 @@ public class PhotoViewer extends Application {
         primaryStage.show();
         // after nodes are realized update button panel.
         repositionButtonPanel.run();
-    }
-
-    /**
-     * Returns a menu having two menu items Rotate Left and
-     * Rotate Right respectively.
-     *
-     * @return Menu A menu having two menu items Rotate Left
-     * and Rotate Right respectively.
-     */
-    private Menu createRotateMenu() {
-        Menu rotateMenu = new Menu("Rotate");
-        // Menu item with a keyboard combo to rotate the image left 90 degrees
-        MenuItem rotateLeft = new MenuItem("Rotate 90° Left");
-        rotateLeft.setAccelerator(new KeyCodeCombination(KeyCode.LEFT,
-                KeyCombination.SHORTCUT_DOWN));
-        rotateLeft.setOnAction(actionEvent -> {
-            if (currentIndex > -1) {
-                ImageInfo imageInfo = IMAGE_FILES.get(currentIndex);
-                imageInfo.addDegrees(-90);
-                currentImageView.setRotate(imageInfo.getDegrees());
-            }
-        });
-
-        // Menu item with a keyboard combo to rotate the image right 90 degrees
-        MenuItem rotateRight = new MenuItem("Rotate 90° Right");
-        rotateRight.setAccelerator(new KeyCodeCombination(KeyCode.RIGHT,
-                KeyCombination.SHORTCUT_DOWN));
-        rotateRight.setOnAction(actionEvent -> {
-            if (currentIndex > -1) {
-                ImageInfo imageInfo = IMAGE_FILES.get(currentIndex);
-                imageInfo.addDegrees(90);
-
-                currentImageView.setRotate(imageInfo.getDegrees());
-            }
-        });
-
-        rotateMenu.getItems().addAll(rotateLeft, rotateRight);
-        return rotateMenu;
     }
 
     /**
@@ -255,6 +236,21 @@ public class PhotoViewer extends Application {
 
             }
         });
+        MenuItem saveAsMenuItem = new MenuItem("Save _As");
+        saveAsMenuItem.setMnemonicParsing(true);
+        saveAsMenuItem.setOnAction( actionEvent -> {
+            File fileSave = fileChooser.showSaveDialog(stage);
+            if (fileSave != null) {
+
+                WritableImage image = currentImageView.snapshot(new SnapshotParameters(), null);
+
+                try {
+                    ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", fileSave);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
         // Quit application
         MenuItem exitMenuItem = new MenuItem("_Quit");
@@ -263,9 +259,134 @@ public class PhotoViewer extends Application {
                 KeyCombination.SHORTCUT_DOWN));
         exitMenuItem.setOnAction(actionEvent -> Platform.exit());
 
-        fileMenu.getItems().addAll(loadImagesMenuItem, exitMenuItem);
+        fileMenu.getItems().addAll(loadImagesMenuItem, saveAsMenuItem, exitMenuItem);
 
         return fileMenu;
+    }
+
+    /**
+     * Returns a menu having two menu items Rotate Left and
+     * Rotate Right respectively.
+     *
+     * @return Menu A menu having two menu items Rotate Left
+     * and Rotate Right respectively.
+     */
+    private Menu createRotateMenu() {
+        Menu rotateMenu = new Menu("Rotate");
+        // Menu item with a keyboard combo to rotate the image left 90 degrees
+        MenuItem rotateLeft = new MenuItem("Rotate 90° Left");
+        rotateLeft.setAccelerator(new KeyCodeCombination(KeyCode.LEFT,
+                KeyCombination.SHORTCUT_DOWN));
+        rotateLeft.setOnAction(actionEvent -> {
+            if (currentIndex > -1) {
+                ImageInfo imageInfo = IMAGE_FILES.get(currentIndex);
+                imageInfo.addDegrees(-90);
+                currentImageView.setRotate(imageInfo.getDegrees());
+            }
+        });
+
+        // Menu item with a keyboard combo to rotate the image right 90 degrees
+        MenuItem rotateRight = new MenuItem("Rotate 90° Right");
+        rotateRight.setAccelerator(new KeyCodeCombination(KeyCode.RIGHT,
+                KeyCombination.SHORTCUT_DOWN));
+        rotateRight.setOnAction(actionEvent -> {
+            if (currentIndex > -1) {
+                ImageInfo imageInfo = IMAGE_FILES.get(currentIndex);
+                imageInfo.addDegrees(90);
+
+                currentImageView.setRotate(imageInfo.getDegrees());
+            }
+        });
+
+        rotateMenu.getItems().addAll(rotateLeft, rotateRight);
+        return rotateMenu;
+    }
+
+    /**
+     * When a picture is loaded or currently displayed the sliders will take on
+     * the color adjustment values.
+     * @param colorAdjust
+     */
+    private void updateSliders(ColorAdjust colorAdjust) {
+        SLIDER_MAP.forEach( (k,slider) -> {
+            //System.out.println("slider " + k + " " + slider.getValue());
+            switch (k) {
+                case HUE:
+                    slider.setValue(colorAdjust.getHue());
+                    break;
+                case BRIGHTNESS:
+                    slider.setValue(colorAdjust.getBrightness());
+                    break;
+                case SATURATION:
+                    slider.setValue(colorAdjust.getSaturation());
+                    break;
+                case CONTRAST:
+                    slider.setValue(colorAdjust.getContrast());
+                    break;
+                default:
+                    slider.setValue(0);
+            }
+        });
+    }
+
+    /**
+     * Creates menu items containing slider controls for color adjustments.
+     * @param name Name of the color adjustment
+     * @param id the id or key for slider to be looked up.
+     * @param c A closure from the caller to alter a color adjustment.
+     * @return MenuItem A label with a slider.
+     */
+    private MenuItem createSliderMenuItem(String name, COLOR_ADJ id, Consumer c) {
+        Slider slider = new Slider(-1, 1, 0);
+        SLIDER_MAP.put(id, slider);
+        slider.valueProperty().addListener((ob, ov, nv) -> {
+            c.accept(nv.doubleValue());
+        });
+        Label label = new Label(name, slider);
+        label.setContentDisplay(ContentDisplay.RIGHT);
+        MenuItem menuItem = new CustomMenuItem(label);
+        return menuItem;
+    }
+
+    /**
+     * Creates menu items for color adjustments using sliders for
+     * Hue, Saturation, Brightness and Contrast.
+     * @return Menu having menu items for adjusting color adjustments.
+     */
+    private Menu createColorAdjustMenu() {
+        Menu colorAdjustMenu = new Menu("Color Adjust");
+        Consumer<Double> hueConsumer = (value) -> {
+            colorAdjustProperty.get().hueProperty().set(value);
+        };
+        MenuItem hueMenuItem = createSliderMenuItem("H", COLOR_ADJ.HUE, hueConsumer);
+
+        Consumer<Double> saturationConsumer = (value) -> {
+            colorAdjustProperty.get().setSaturation(value);
+        };
+        MenuItem saturateMenuItem = createSliderMenuItem("S", COLOR_ADJ.SATURATION, saturationConsumer);
+
+        Consumer<Double> brightnessConsumer = (value) -> {
+            colorAdjustProperty.get().setBrightness(value);
+        };
+        MenuItem brightnessMenuItem = createSliderMenuItem("B", COLOR_ADJ.BRIGHTNESS, brightnessConsumer);
+
+        Consumer<Double> contrastConsumer = (value) -> {
+            colorAdjustProperty.get().setContrast(value);
+        };
+        MenuItem contrastMenuItem = createSliderMenuItem("C", COLOR_ADJ.CONTRAST, contrastConsumer);
+        MenuItem resetMenuItem = new MenuItem("Reset");
+        resetMenuItem.setOnAction( actionEvent -> {
+            ColorAdjust colorAdjust = colorAdjustProperty.get();
+            colorAdjust.setHue(0);
+            colorAdjust.setContrast(0);
+            colorAdjust.setBrightness(0);
+            colorAdjust.setSaturation(0);
+            updateSliders(colorAdjust);
+        });
+        colorAdjustMenu.getItems().addAll(hueMenuItem, saturateMenuItem,
+                brightnessMenuItem, contrastMenuItem, resetMenuItem);
+
+        return colorAdjustMenu;
     }
 
     /**
@@ -285,7 +406,6 @@ public class PhotoViewer extends Application {
         imageView.setSmooth(true);
         // resize based on the scene
         imageView.fitWidthProperty().bind(widthProperty);
-        //imageView.fitHeightProperty().bind(heightProperty);
         return imageView;
     }
     
@@ -512,6 +632,9 @@ public class PhotoViewer extends Application {
                             + imageInfo.getUrl());
                     currentImageView.setImage(image);
                     currentImageView.setRotate(imageInfo.getDegrees());
+                    currentImageView.setEffect(imageInfo.getColorAdjust());
+                    colorAdjustProperty.setValue(imageInfo.getColorAdjust());
+                    updateSliders(imageInfo.getColorAdjust());
                     progressIndicator.setVisible(false);
                     loading.set(false); // free lock
                 });
@@ -548,33 +671,3 @@ public class PhotoViewer extends Application {
     }  
 }
 
-/**
- * This class has a url to the image file and a degrees value
- * to rotate the image view based on the angle of incre
- */
-class ImageInfo {
-    private String url;
-    private int degrees;
-    public ImageInfo(String url) {
-        this.url = url;
-    }
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public int getDegrees() {
-        return degrees;
-    }
-
-    public void setDegrees(int degrees) {
-        this.degrees = degrees;
-    }
-
-    public void addDegrees(int degrees) {
-        this.degrees += degrees;
-    }
-}

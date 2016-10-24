@@ -1,2 +1,3 @@
 mkdir mlib
+#jar cvf mlib/chap11.jar -C classpath .
 jar --create --file=mlib/chap11.jar -C classpath .

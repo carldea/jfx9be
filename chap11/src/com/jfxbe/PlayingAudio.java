@@ -1,23 +1,37 @@
 package com.jfxbe;
 
-import java.net.MalformedURLException;
-import javafx.application.*;
-import javafx.beans.property.*;
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
-import javafx.scene.*;
+import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Slider;
-import javafx.scene.input.*;
-import javafx.scene.layout.*;
-import javafx.scene.media.*;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaPlayer.Status;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
-import javafx.stage.*;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.stage.WindowEvent;
 import javafx.util.Duration;
+
+import java.net.MalformedURLException;
 
 /**
  * Playing Audio using the JavaFX MediaPlayer API.
@@ -304,8 +318,9 @@ public class PlayingAudio extends Application {
                          playPauseToggleButton);
       buttonPanel.setPrefWidth(50);
 
-      // Filter out to prevent the root node to
-      // receive mouse events to drag the window around.
+      // Intercept mouse events. This prevents the
+      // root node from receiving mouse events drag events while
+      // user is pressing on the button panel.
       buttonPanel.addEventHandler(MouseEvent.ANY, mouseEventConsumer);
 
       return buttonPanel;
