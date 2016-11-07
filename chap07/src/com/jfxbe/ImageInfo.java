@@ -10,6 +10,8 @@ public class ImageInfo {
     private String url;
     private int degrees;
     private ColorAdjust colorAdjust;
+    private double translateY;
+
     public ImageInfo(String url) {
         this.url = url;
         this.colorAdjust = new ColorAdjust();
@@ -28,6 +30,14 @@ public class ImageInfo {
 
     public void setDegrees(int degrees) {
         this.degrees = degrees;
+    }
+
+    public double getTranslateY() {
+        return translateY;
+    }
+
+    public void setTranslateY(double translateY) {
+        this.translateY = translateY;
     }
 
     public void addDegrees(int degrees) {
