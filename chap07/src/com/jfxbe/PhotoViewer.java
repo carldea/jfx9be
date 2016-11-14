@@ -2,12 +2,8 @@ package com.jfxbe;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.event.EventHandler;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -18,10 +14,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.*;
-import javafx.scene.layout.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Arc;
-import javafx.scene.shape.ArcType;
 import javafx.scene.transform.Rotate;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -34,19 +29,24 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.jfxbe.PhotoViewer.COLOR_ADJ_TYPE.*;
+
 /**
- * A photo viewer application to demonstrate the JavaFX ImageView node.
+ * A photo viewer application to demonstrate the JavaFX ImageView APIs.
+ * Although you can use the menu options there are also keyboard
+ * short-cuts.
  * <p>
  * Instructions:
  *    1. Drag and drop an image file onto the application window.
  *    1a. Alternatively, you may use the file chooser from the menu.
  *    2. Repeat step 1 so more than 2 images are loaded.
  *    3. Click the left and right arrow controls to advance.
+ *    4. Rotate current image from the menu options.
+ *    5. Adjust Color settings in the menu options.
  * </p>  
  * @author Carl Dea
  */
@@ -55,167 +55,33 @@ public class PhotoViewer extends Application {
     private final static Logger LOGGER = Logger
             .getLogger(PhotoViewer.class.getName());
 
-    /** List of ImageInfo instances. */
-    private final static List<ImageInfo> IMAGE_FILES = new ArrayList<>();
-
-    /** The current index into the IMAGE_FILES list. */
-    private int currentIndex = -1;
-
-    /** Enumeration of next and previous button directions */
-    public enum ButtonMove {NEXT, PREV}
-
     /** Current image view display */
-    private ImageView currentImageView;
+    private ImageView _currentViewImage;
 
-    public static final String MAIN_IMAGE_VIEW = "main-image-view";
-    public static final String ROTATE_LEFT = "rotate-left-keystroke";
-    public static final String ROTATE_RIGHT = "rotate-right-keystroke";
+    /** Rotation of the image view */
+    private Rotate _rotate = new Rotate();
 
-    private Menu rotateMenu;
+    /** Color adjustment */
+    private ColorAdjust _colorAdjust = new ColorAdjust();
 
-    /** Loading progress indicator */
-    private ProgressIndicator progressIndicator;
-
-    /** Used to indicate a task is still working */
-    private AtomicBoolean loading = new AtomicBoolean();
-
-    /** A file chooser for the user to select image files to open. */
-    private FileChooser fileChooser = new FileChooser();
-
-    private ObjectProperty<ColorAdjust> colorAdjustProperty = new SimpleObjectProperty<>();
-    enum COLOR_ADJ {
+    /** Types of color adjustments */
+    enum COLOR_ADJ_TYPE {
         HUE, SATURATION, BRIGHTNESS, CONTRAST
     }
-    private Map<COLOR_ADJ, Slider> SLIDER_MAP = new HashMap<>();
 
-    private ImageViewButtons buttonPanel;
+    /** A mapping of color adjustment type to a bound slider */
+    private Map<COLOR_ADJ_TYPE, Slider> _sliderLookupMap = new HashMap<>();
 
-    private Stage primaryStage;
+    /** Custom Button panel to view previous and next images */
+    private ImageViewButtons _buttonPanel;
 
-    private Rotate rotate = new Rotate();
-    private MenuBar menuBar;
-    private ExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+    /** Single threaded service for loading an image */
+    private ExecutorService _executorService =
+            Executors.newSingleThreadScheduledExecutor();
 
-    private void wireupUIBehavior() {
-        Scene scene = primaryStage.getScene();
-
-        // resize image view when scene is resized.
-        //ImageView imageView = (ImageView) scene.lookup("#" + MAIN_IMAGE_VIEW);
-        currentImageView.fitWidthProperty().bind(scene.widthProperty());
-        // wire-up menu options
-        // rotate options
-        MenuItem rotateLeft = rotateMenu.getItems()
-                                        .stream()
-                                        .filter( predicate ->
-                                                ROTATE_LEFT.equals(predicate.getId()))
-                                        .findFirst()
-                                        .get();
-        rotateLeft.setOnAction(actionEvent -> {
-            if (currentIndex > -1) {
-                ImageInfo imageInfo = IMAGE_FILES.get(currentIndex);
-                imageInfo.addDegrees(-90);
-                rotateImageView(imageInfo.getDegrees());
-            }
-        });
-
-        MenuItem rotateRight = rotateMenu.getItems()
-                .stream()
-                .filter( predicate ->
-                        ROTATE_RIGHT.equals(predicate.getId()))
-                .findFirst()
-                .get();
-
-        rotateRight.setOnAction(actionEvent -> {
-            if (currentIndex > -1) {
-                    ImageInfo imageInfo = IMAGE_FILES.get(currentIndex);
-                    imageInfo.addDegrees(90);
-                    rotateImageView(imageInfo.getDegrees());
-            }
-        });
-
-
-        // wire-up button panel
-
-        // view previous image action
-        Runnable viewPreviousAction = () -> {
-            LOGGER.log(Level.INFO, "busy loading? " + loading.get());
-            // if no previous image or currently loading.
-            if (currentIndex == 0 || loading.get()) return;
-            currentIndex = gotoImageIndex(ButtonMove.PREV);
-            loadAndDisplayImage();
-        };
-
-        buttonPanel.setLeftButtonAction( mouseEvent -> viewPreviousAction.run());
-        // Left arrow key pressed will display the previous image
-        scene.addEventFilter(KeyEvent.KEY_PRESSED, keyEvent -> {
-            if (keyEvent.getCode() == KeyCode.LEFT
-                    && !keyEvent.isShortcutDown()) {
-                viewPreviousAction.run();
-            }
-        });
-
-        Runnable viewNextAction = () -> {
-            LOGGER.log(Level.INFO, "busy loading? " + loading.get());
-            // if no next image or currently loading.
-            if (currentIndex == IMAGE_FILES.size()-1
-                    || loading.get()) return;
-
-            currentIndex = gotoImageIndex(ButtonMove.NEXT);
-            loadAndDisplayImage();
-        };
-
-        buttonPanel.setRightButtonAction( mouseEvent -> viewNextAction.run());
-
-        // Right arrow key pressed will display the next image
-        scene.addEventFilter(KeyEvent.KEY_PRESSED, keyEvent -> {
-            if (keyEvent.getCode() == KeyCode.RIGHT
-                    && !keyEvent.isShortcutDown()) {
-                viewNextAction.run();
-            }
-        });
-
-        // Setup drag and drop file capabilities
-        setupDragNDrop();
-    }
-
-    private void rotateImageView(double degrees) {
-        rotate.setPivotX(currentImageView.getFitWidth()/2);
-        rotate.setPivotY(currentImageView.getFitHeight()/2);
-        rotate.setAngle(degrees);
-    }
-    private void loadAndDisplayImage() {
-        if (currentIndex < 0) return;
-
-        final ImageInfo imageInfo = IMAGE_FILES.get(currentIndex);
-        progressIndicator.setVisible(true);
-        progressIndicator.progressProperty().unbind();
-
-        Task<Image> loadImage = createWorker(imageInfo.getUrl());
-        progressIndicator.progressProperty().bind(loadImage.progressProperty());
-        loadImage.setOnSucceeded(workerStateEvent -> {
-
-            try {
-                currentImageView.setImage(loadImage.get());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-            // Rotate image view
-            rotateImageView(imageInfo.getDegrees());
-
-            // Apply color adjust
-            currentImageView.setEffect(imageInfo.getColorAdjust());
-            colorAdjustProperty.setValue(imageInfo.getColorAdjust());
-            updateSliders(imageInfo.getColorAdjust());
-            progressIndicator.setVisible(false);
-            loading.set(false); // free lock
-        });
-        executorService.submit(loadImage);
-    }
     @Override
     public void start(Stage primaryStage) {
-        this.primaryStage = primaryStage;
+
         primaryStage.setTitle("Photo Viewer");
         BorderPane root = new BorderPane();
         Scene scene = new Scene(root, 551, 400, Color.BLACK);
@@ -228,99 +94,144 @@ public class PhotoViewer extends Application {
         // Anchor Pane
         AnchorPane mainContentPane = new AnchorPane();
 
-        //   SubScene
-        //      Group
+        // Group is a container to hold the image view
         Group imageGroup = new Group();
         AnchorPane.setTopAnchor(imageGroup, 0.0);
         AnchorPane.setLeftAnchor(imageGroup, 0.0);
 
-        //        imageView
-        currentImageView = createImageView();
+        // Current image view
+        _currentViewImage = createImageView(_rotate);
+        imageGroup.getChildren().add(_currentViewImage);
 
-        //   ButtonPanel
-        buttonPanel = new ImageViewButtons();
-
-
-        imageGroup.getChildren().add(currentImageView);
+        // Custom ButtonPanel (Next, Previous)
+        List<ImageInfo> IMAGE_FILES = new ArrayList<>();
+        _buttonPanel = new ImageViewButtons(IMAGE_FILES);
 
         // Create a progress indicator
-        progressIndicator = createProgressIndicator();
+        ProgressIndicator progressIndicator = createProgressIndicator();
 
-        // put subscene into anchor pane.
-        // put Button panel
-        // progress indicator
-        mainContentPane.getChildren().addAll(imageGroup, buttonPanel, progressIndicator);
+        // layer items. Items that are last are on top
+        mainContentPane.getChildren().addAll(imageGroup,
+                _buttonPanel, progressIndicator);
 
-        // Create a button panel control having
-        // left & right arrows buttons
-
-        // Create menus File and Rotate
-        Menu fileMenu = createFileMenu(primaryStage);
+        // Create menus File, Rotate, Color adjust menus
+        Menu fileMenu = createFileMenu(primaryStage, progressIndicator);
         Menu rotateMenu = createRotateMenu();
         Menu colorAdjustMenu = createColorAdjustMenu();
-        menuBar = new MenuBar(fileMenu, rotateMenu, colorAdjustMenu);
+        MenuBar menuBar = new MenuBar(
+                fileMenu, rotateMenu, colorAdjustMenu);
         root.setTop(menuBar);
 
         // Create the center content of the root pane (Border)
-//        mainContentPane.getChildren().addAll(currentImageView, progressIndicator, buttonPanel);
-
         // Make sure the center content is under the menu bar
         BorderPane.setAlignment(mainContentPane, Pos.TOP_CENTER);
         root.setCenter(mainContentPane);
 
-        Runnable positionButtonPanel = () -> {
-            // update buttonPanel's x
-            buttonPanel.setTranslateX(scene.getWidth() - 75);
-            // update buttonPanel's y
-            buttonPanel.setTranslateY(scene.getHeight() - 75);
-        };
-
-        Runnable repositionProgressIndicator = () -> {
-            // update progress x
-            progressIndicator.setTranslateX(scene.getWidth()/2 - (progressIndicator.getWidth()/2));
-            progressIndicator.setTranslateY(scene.getHeight()/2 - (progressIndicator.getHeight()/2));
-        };
-
-        scene.widthProperty().addListener(observable -> {
-            positionButtonPanel.run();
-            repositionProgressIndicator.run();
-        });
-
-        scene.heightProperty().addListener(observable -> {
-            positionButtonPanel.run();
-            repositionProgressIndicator.run();
-        });
-
-
         // When nodes are visible they can be repositioned.
-        primaryStage.setOnShown( event -> {
-            wireupUIBehavior();
-            positionButtonPanel.run();
-            repositionProgressIndicator.run();
-        });
+        primaryStage.setOnShown( event ->
+                wireupUIBehavior(primaryStage, progressIndicator));
 
         primaryStage.show();
-        // after nodes are realized update button panel.
+
+    }
+
+
+    @Override
+    public void stop() throws Exception {
+        super.stop();
+        // Shutdown thread service
+        _executorService.shutdown();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 
     /**
-     * Returns a newly created file menu having two menu items.
-     * The first is Open menu item for loading images from a file chooser.
-     * Secondly, Quit menu item exist the application.
-     * @param stage The primary stage window to place file chooser in the center.
-     * @return Menu A File menu contain Open and Quit menu items respectively.
+     * A factory function returning an ImageView instance to
+     * preserve the aspect ratio and bind the width
+     * of the scene to resize the image.
+     * @param rotate A Transform to rotate the image view node.
+     * @return ImageView A newly created image view for current
+     * display.
      */
-    private Menu createFileMenu(Stage stage) {
+    private ImageView createImageView(Rotate rotate) {
+        ImageView imageView = new ImageView();
+        imageView.setPreserveRatio(true);
+        imageView.setSmooth(true);
+        imageView.getTransforms().addAll(rotate);
+        return imageView;
+    }
+
+    /**
+     * Create a progress indicator control shown when loading images.
+     * @return ProgressIndicator a new progress indicator.
+     */
+    private ProgressIndicator createProgressIndicator() {
+        ProgressIndicator progress = new ProgressIndicator();
+        progress.setVisible(false);
+        progress.setMaxSize(100d, 100d);
+        return progress;
+    }
+
+    /**
+     * Returns a newly created file menu having three menu items.
+     * The three options are Open, Save As and Quit.
+     *
+     * @param stage The primary stage window to place file
+     *              chooser in the center.
+     * @param progressIndicator The indicator shown during the load
+     *                          process.
+     * @return Menu A File menu containing Open, Save As and
+     * Quit menu items respectively.
+     */
+    private Menu createFileMenu(Stage stage,
+                                ProgressIndicator progressIndicator) {
         Menu fileMenu = new Menu("File");
 
-        // Open files
         MenuItem loadImagesMenuItem = new MenuItem("_Open");
         loadImagesMenuItem.setMnemonicParsing(true);
         loadImagesMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.O,
                 KeyCombination.SHORTCUT_DOWN));
 
+        // file chooser to open a file
+        wireupLoadMenuItem(loadImagesMenuItem, stage, progressIndicator);
+
+        MenuItem saveAsMenuItem = new MenuItem("Save _As");
+        saveAsMenuItem.setMnemonicParsing(true);
+
+        // file chooser to save image as file
+        wireupSaveMenuItem(saveAsMenuItem, stage);
+
+        // Quit application
+        MenuItem exitMenuItem = new MenuItem("_Quit");
+        exitMenuItem.setMnemonicParsing(true);
+        exitMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.Q,
+                KeyCombination.SHORTCUT_DOWN));
+
+        // exiting
+        exitMenuItem.setOnAction(actionEvent -> Platform.exit());
+
+        fileMenu.getItems().addAll(loadImagesMenuItem,
+                saveAsMenuItem, exitMenuItem);
+
+        return fileMenu;
+    }
+
+    /**
+     * An action to launch a file chooser to allow the user to load
+     * an image from the file system.
+     * @param menuItem The Open menu item
+     * @param primaryStage
+     * @param progressIndicator The indicator shown during the load
+     *                          process.
+     */
+    protected void wireupLoadMenuItem(MenuItem menuItem,
+                                      Stage primaryStage,
+                                      ProgressIndicator progressIndicator) {
         // A file chooser is launched with a filter based
         // on image file formats
+        FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("View Pictures");
         fileChooser.setInitialDirectory(
                 new File(System.getProperty("user.home"))
@@ -334,16 +245,16 @@ public class PhotoViewer extends Application {
                 new FileChooser.ExtensionFilter("BMP", "*.bmp"),
                 new FileChooser.ExtensionFilter("GIF", "*.gif")
         );
-        loadImagesMenuItem.setOnAction( actionEvt -> {
-            List<File> list = fileChooser.showOpenMultipleDialog(stage);
+        menuItem.setOnAction( actionEvt -> {
+            List<File> list = fileChooser.showOpenMultipleDialog(primaryStage);
             if (list != null) {
                 for (File file : list) {
                     //openFile(file);
                     try {
-                        addImage(file.toURI().toURL().toString());
-                        if (currentIndex > -1) {
-                            //loadImage(IMAGE_FILES.get(currentIndex));
-                            loadAndDisplayImage();
+                        String url = file.toURI().toURL().toString();
+                        if (isValidImageFile(url)) {
+                            _buttonPanel.addImage(url);
+                            loadAndDisplayImage(progressIndicator);
                         }
                     } catch (MalformedURLException e) {
                         e.printStackTrace();
@@ -352,32 +263,32 @@ public class PhotoViewer extends Application {
 
             }
         });
-        MenuItem saveAsMenuItem = new MenuItem("Save _As");
-        saveAsMenuItem.setMnemonicParsing(true);
-        saveAsMenuItem.setOnAction( actionEvent -> {
-            File fileSave = fileChooser.showSaveDialog(stage);
+    }
+
+    /**
+     * An action to launch a file chooser to allow the user to save
+     * an image.
+     * @param menuItem The save menu item.
+     * @param primaryStage
+     */
+    protected void wireupSaveMenuItem(MenuItem menuItem,
+                                      Stage primaryStage) {
+        menuItem.setOnAction( actionEvent -> {
+            FileChooser fileChooser = new FileChooser();
+            File fileSave = fileChooser.showSaveDialog(primaryStage);
             if (fileSave != null) {
 
-                WritableImage image = currentImageView.snapshot(new SnapshotParameters(), null);
+                WritableImage image = _currentViewImage.snapshot(
+                        new SnapshotParameters(), null);
 
                 try {
-                    ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", fileSave);
+                    ImageIO.write(SwingFXUtils.fromFXImage(image, null),
+                            "png", fileSave);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         });
-
-        // Quit application
-        MenuItem exitMenuItem = new MenuItem("_Quit");
-        exitMenuItem.setMnemonicParsing(true);
-        exitMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.Q,
-                KeyCombination.SHORTCUT_DOWN));
-        exitMenuItem.setOnAction(actionEvent -> Platform.exit());
-
-        fileMenu.getItems().addAll(loadImagesMenuItem, saveAsMenuItem, exitMenuItem);
-
-        return fileMenu;
     }
 
     /**
@@ -388,66 +299,52 @@ public class PhotoViewer extends Application {
      * and Rotate Right respectively.
      */
     private Menu createRotateMenu() {
-        rotateMenu = new Menu("Rotate");
-        // Menu item with a keyboard combo to rotate the image left 90 degrees
+        Menu rotateMenu = new Menu("Rotate");
+        // Menu item with a keyboard combo to rotate the image
+        // left 90 degrees
         MenuItem rotateLeft = new MenuItem("Rotate 90° Left");
         rotateLeft.setAccelerator(new KeyCodeCombination(KeyCode.LEFT,
                 KeyCombination.SHORTCUT_DOWN));
-        rotateLeft.setId(ROTATE_LEFT);
 
-        // Menu item with a keyboard combo to rotate the image right 90 degrees
+        wireupRotateAngleBy(rotateLeft, -90);
+
+        // Menu item with a keyboard combo to rotate the image
+        // right 90 degrees
         MenuItem rotateRight = new MenuItem("Rotate 90° Right");
         rotateRight.setAccelerator(new KeyCodeCombination(KeyCode.RIGHT,
                 KeyCombination.SHORTCUT_DOWN));
-        rotateRight.setId(ROTATE_RIGHT);
+
+        wireupRotateAngleBy(rotateRight, 90);
 
         rotateMenu.getItems().addAll(rotateLeft, rotateRight);
         return rotateMenu;
     }
 
     /**
-     * When a picture is loaded or currently displayed the sliders will take on
-     * the color adjustment values.
-     * @param colorAdjust
+     * Action code to be attached to the target menu item to
+     * rotate the image view by an angle in degrees.
+     * @param menuItem
+     * @param angleDegrees
      */
-    private void updateSliders(ColorAdjust colorAdjust) {
-        SLIDER_MAP.forEach( (k,slider) -> {
-            switch (k) {
-                case HUE:
-                    slider.setValue(colorAdjust.getHue());
-                    break;
-                case BRIGHTNESS:
-                    slider.setValue(colorAdjust.getBrightness());
-                    break;
-                case SATURATION:
-                    slider.setValue(colorAdjust.getSaturation());
-                    break;
-                case CONTRAST:
-                    slider.setValue(colorAdjust.getContrast());
-                    break;
-                default:
-                    slider.setValue(0);
-            }
+    protected void wireupRotateAngleBy(MenuItem menuItem, double angleDegrees) {
+        // rotate options
+        menuItem.setOnAction(actionEvent -> {
+            ImageInfo imageInfo = _buttonPanel.getCurrentImageInfo();
+            imageInfo.addDegrees(angleDegrees);
+            rotateImageView(imageInfo.getDegrees());
         });
     }
 
     /**
-     * Creates menu items containing slider controls for color adjustments.
-     * @param name Name of the color adjustment
-     * @param id the id or key for slider to be looked up.
-     * @param c A closure from the caller to alter a color adjustment.
-     * @return MenuItem A label with a slider.
+     * Rotates the ImageView based on angle in degrees.
+     * The pivot point is based on the current width and
+     * height of the image view node.
+     * @param degrees
      */
-    private MenuItem createSliderMenuItem(String name, COLOR_ADJ id, Consumer<Double> c) {
-        Slider slider = new Slider(-1, 1, 0);
-        SLIDER_MAP.put(id, slider);
-        slider.valueProperty().addListener((ob, ov, nv) -> {
-            c.accept(nv.doubleValue());
-        });
-        Label label = new Label(name, slider);
-        label.setContentDisplay(ContentDisplay.LEFT);
-        MenuItem menuItem = new CustomMenuItem(label);
-        return menuItem;
+    private void rotateImageView(double degrees) {
+        _rotate.setPivotX(_currentViewImage.getFitWidth()/2);
+        _rotate.setPivotY(_currentViewImage.getFitHeight()/2);
+        _rotate.setAngle(degrees);
     }
 
     /**
@@ -457,69 +354,277 @@ public class PhotoViewer extends Application {
      */
     private Menu createColorAdjustMenu() {
         Menu colorAdjustMenu = new Menu("Color Adjust");
-        Consumer<Double> hueConsumer = (value) -> {
-            colorAdjustProperty.get().hueProperty().set(value);
-        };
-        MenuItem hueMenuItem = createSliderMenuItem("Hue", COLOR_ADJ.HUE, hueConsumer);
+        Consumer<Double> hueConsumer = (value) ->
+            _colorAdjust.hueProperty().set(value);
+        MenuItem hueMenuItem = createSliderMenuItem("Hue",
+                HUE, hueConsumer);
 
         Consumer<Double> saturationConsumer = (value) ->
-            colorAdjustProperty.get().setSaturation(value);
+                _colorAdjust.setSaturation(value);
 
-        MenuItem saturateMenuItem = createSliderMenuItem("Saturation", COLOR_ADJ.SATURATION, saturationConsumer);
+        MenuItem saturateMenuItem = createSliderMenuItem("Saturation",
+                SATURATION, saturationConsumer);
 
         Consumer<Double> brightnessConsumer = (value) ->
-            colorAdjustProperty.get().setBrightness(value);
+                _colorAdjust.setBrightness(value);
 
-        MenuItem brightnessMenuItem = createSliderMenuItem("Brightness", COLOR_ADJ.BRIGHTNESS, brightnessConsumer);
+        MenuItem brightnessMenuItem = createSliderMenuItem("Brightness",
+                BRIGHTNESS, brightnessConsumer);
 
         Consumer<Double> contrastConsumer = (value) ->
-            colorAdjustProperty.get().setContrast(value);
+                _colorAdjust.setContrast(value);
 
-        MenuItem contrastMenuItem = createSliderMenuItem("Contrast", COLOR_ADJ.CONTRAST, contrastConsumer);
+        MenuItem contrastMenuItem = createSliderMenuItem("Contrast",
+                CONTRAST, contrastConsumer);
+
         MenuItem resetMenuItem = new MenuItem("Restore to Original");
-        resetMenuItem.setOnAction( actionEvent -> {
-            ColorAdjust colorAdjust = colorAdjustProperty.get();
-            colorAdjust.setHue(0);
-            colorAdjust.setContrast(0);
-            colorAdjust.setBrightness(0);
-            colorAdjust.setSaturation(0);
-            updateSliders(colorAdjust);
+
+        resetMenuItem.setOnAction(actionEvent -> {
+            _colorAdjust.setHue(0);
+            _colorAdjust.setContrast(0);
+            _colorAdjust.setBrightness(0);
+            _colorAdjust.setSaturation(0);
+            updateSliders();
         });
-        colorAdjustMenu.getItems().addAll(hueMenuItem, saturateMenuItem,
-                brightnessMenuItem, contrastMenuItem, resetMenuItem);
+
+        colorAdjustMenu.getItems()
+                .addAll(hueMenuItem, saturateMenuItem,
+                        brightnessMenuItem, contrastMenuItem,
+                        resetMenuItem);
 
         return colorAdjustMenu;
     }
+    /**
+     * Creates menu items containing slider controls for
+     * color adjustments.
+     * @param name Name of the color adjustment
+     * @param id the id or key for slider to be looked up.
+     * @param c A closure from the caller to alter a
+     *          color adjustment.
+     * @return MenuItem A label with a slider.
+     */
+    private MenuItem createSliderMenuItem(String name,
+                                          COLOR_ADJ_TYPE id,
+                                          Consumer<Double> c) {
+
+        Slider slider = new Slider(-1, 1, 0);
+        _sliderLookupMap.put(id, slider);
+        slider.valueProperty().addListener(ob ->
+                c.accept(slider.getValue()));
+
+        Label label = new Label(name, slider);
+        label.setContentDisplay(ContentDisplay.LEFT);
+        MenuItem menuItem = new CustomMenuItem(label);
+        return menuItem;
+    }
 
     /**
-     * A factory function returning an ImageView instance to 
-     * preserve the aspect ratio and bind the width
-     * of the scene to resize the image.
-     * 
-     * @return ImageView A newly created image view for current display.
+     * When a picture is loaded or currently displayed the
+     * sliders will take on the color adjustment values.
      */
-    private ImageView createImageView() {
-        ImageView imageView = new ImageView();
-        imageView.setId(MAIN_IMAGE_VIEW);
-        imageView.setPreserveRatio(true);
-        imageView.setSmooth(true);
-        imageView.getTransforms().addAll(rotate);
-        return imageView;
+    private void updateSliders() {
+        _sliderLookupMap.forEach( (id, slider) -> {
+            switch (id) {
+                case HUE:
+                    slider.setValue(_colorAdjust.getHue());
+                    break;
+                case BRIGHTNESS:
+                    slider.setValue(_colorAdjust.getBrightness());
+                    break;
+                case SATURATION:
+                    slider.setValue(_colorAdjust.getSaturation());
+                    break;
+                case CONTRAST:
+                    slider.setValue(_colorAdjust.getContrast());
+                    break;
+                default:
+                    slider.setValue(0);
+            }
+        });
     }
-    
+
+    /** Wireup behavior of UI elements and actions.
+     * This method is called after the stage and scene is shown.
+     * @param primaryStage Main application window.
+     * @param progressIndicator node indicating load progress.
+     */
+    private void wireupUIBehavior(Stage primaryStage,
+                                  ProgressIndicator progressIndicator) {
+        Scene scene = primaryStage.getScene();
+
+        // make the custom button panel float bottom right
+        Runnable repositionButtonPanel = () -> {
+            // update buttonPanel's x
+            _buttonPanel.setTranslateX(scene.getWidth() - 75);
+            // update buttonPanel's y
+            _buttonPanel.setTranslateY(scene.getHeight() - 75);
+        };
+
+        // make the progress indicator float in the center
+        Runnable repositionProgressIndicator = () -> {
+            // update progress x
+            progressIndicator.setTranslateX(
+                    scene.getWidth()/2 - (progressIndicator.getWidth()/2));
+            progressIndicator.setTranslateY(
+                    scene.getHeight()/2 - (progressIndicator.getHeight()/2));
+        };
+
+        // invoking both to repositioning closures.
+        Runnable repositionCode = () -> {
+            repositionButtonPanel.run();
+            repositionProgressIndicator.run();
+        };
+
+        // Anytime the window is resized reposition the button panel
+        scene.widthProperty().addListener(observable ->
+                repositionCode.run());
+        scene.heightProperty().addListener(observable ->
+                repositionCode.run());
+
+        // Go ahead and reposition now.
+        repositionCode.run();
+
+        // resize image view when scene is resized.
+        _currentViewImage.fitWidthProperty()
+                        .bind(scene.widthProperty());
+
+        // view previous image action
+        Runnable viewPreviousAction = () -> {
+            // if no previous image or currently loading.
+            if (_buttonPanel.isAtBeginning()) return;
+            else _buttonPanel.goPrevious();
+            loadAndDisplayImage(progressIndicator);
+        };
+
+        // attach left button action
+        _buttonPanel.setLeftButtonAction( mouseEvent ->
+                viewPreviousAction.run());
+
+        // Left arrow key stroke pressed action
+        scene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
+            if (keyEvent.getCode() == KeyCode.LEFT
+                    && !keyEvent.isShortcutDown()) {
+                viewPreviousAction.run();
+            }
+        });
+
+        // view next image action
+        Runnable viewNextAction = () -> {
+            // if no next image or currently loading.
+            if (_buttonPanel.isAtEnd()) return;
+            else _buttonPanel.goNext();
+            loadAndDisplayImage(progressIndicator);
+        };
+
+        // attach right button action
+        _buttonPanel.setRightButtonAction( mouseEvent ->
+                viewNextAction.run());
+
+        // Right arrow key stroke pressed action
+        scene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
+            if (keyEvent.getCode() == KeyCode.RIGHT
+                    && !keyEvent.isShortcutDown()) {
+                viewNextAction.run();
+            }
+        });
+
+        // Setup drag and drop file capabilities
+        setupDragNDrop(primaryStage, progressIndicator);
+    }
+
+    /**
+     * Creates a task to load an image in the background. During
+     * the load process the progress indicator is displayed. Once
+     * the image is successfully loaded the image will be displayed.
+     * Also, various image attributes will be applied to the
+     * current image view node such as rotation and color adjustments.
+     * @param progressIndicator node indicating load progress.
+     */
+    private void loadAndDisplayImage(ProgressIndicator progressIndicator) {
+        if (_buttonPanel.getCurrentIndex() < 0) return;
+
+        final ImageInfo imageInfo = _buttonPanel.getCurrentImageInfo();
+
+        // show spinner while image is loading
+        progressIndicator.setVisible(true);
+        progressIndicator.progressProperty().unbind();
+
+        Task<Image> loadImage = createWorker(imageInfo.getUrl());
+        progressIndicator.progressProperty()
+                         .bind(loadImage.progressProperty());
+
+        // after loading has succeeded apply image info
+        loadImage.setOnSucceeded(workerStateEvent -> {
+
+            try {
+
+                _currentViewImage.setImage(loadImage.get());
+
+                // Rotate image view
+                rotateImageView(imageInfo.getDegrees());
+
+                // Apply color adjust
+                _colorAdjust = imageInfo.getColorAdjust();
+                _currentViewImage.setEffect(_colorAdjust);
+
+                // update the menu items containing slider controls
+                updateSliders();
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } finally {
+                // hide progress indicator
+                progressIndicator.setVisible(false);
+            }
+
+        });
+
+        // any failure turn off spinner
+        loadImage.setOnFailed(workerStateEvent ->
+                progressIndicator.setVisible(false));
+
+        _executorService.submit(loadImage);
+    }
+
+    /**
+     * Returns a worker task (Task) which will off-load the image
+     * on a separate thread when finished; the current image will
+     * be displayed on the JavaFX application thread.
+     * @param imageUrl ImageInfo instance containing a url string
+     *                  representation of the path to the image file.
+     *                  The imageInfo also has the degrees in rotation.
+     * @return Task worker task to load image and display into ImageView
+     * control.
+     */
+    private Task<Image> createWorker(String imageUrl) {
+        return new Task<Image>() {
+            @Override
+            protected Image call() throws Exception {
+                // On the worker thread...
+                Image image = new Image(imageUrl, false);
+                return image;
+            }
+        };
+    }
+
     /**
      * Sets up the drag and drop capability for files and URLs to be 
      * dragged and dropped onto the scene. This will load the image into 
      * the current image view area.
      */
-    private void setupDragNDrop() {
+    private void setupDragNDrop(Stage primaryStage,
+                                ProgressIndicator progressIndicator) {
         Scene scene = primaryStage.getScene();
 
         // Dragging over surface
         scene.setOnDragOver((DragEvent event) -> {
             Dragboard db = event.getDragboard();
             if ( db.hasFiles() 
-                    || (db.hasUrl() && isValidImageFile(db.getUrl()))) {
+                    || (db.hasUrl()
+                    && isValidImageFile(db.getUrl()))) {
+
                 LOGGER.log(Level.INFO, "url " + db.getUrl());
                 event.acceptTransferModes(TransferMode.LINK);
             } else {
@@ -536,35 +641,29 @@ public class PhotoViewer extends Application {
                   .stream()
                   .forEach( file -> {
                     try {
-                        LOGGER.log(Level.INFO, "dropped file: "+
-                                file.toURI().toURL().toString());
-                        addImage(file.toURI().toURL().toString());
+                        String url = file.toURI().toURL().toString();
+                        if (isValidImageFile(url)) {
+                            _buttonPanel.addImage(url);
+                        }
+
                     } catch (MalformedURLException ex) {
                         ex.printStackTrace();
                     }
                   });
             } else {
-                LOGGER.log(Level.INFO, "dropped url: "+ db.getUrl());
-                addImage(db.getUrl());
+                String url = db.getUrl();
+                LOGGER.log(Level.                        FINE, "dropped url: "+ db.getUrl());
+                if (isValidImageFile(url)) {
+                    _buttonPanel.addImage(url);
+                }
             }
-            if (currentIndex > -1) {
-                loadAndDisplayImage();
-            }
+
+            loadAndDisplayImage(progressIndicator);
+
 
             event.setDropCompleted(true);
             event.consume();
         });
-    }
-
-    /**
-     * Create a progress indicator control shown when loading images.
-     * @return ProgressIndicator a new progress indicator.
-     */
-    private ProgressIndicator createProgressIndicator() {
-        ProgressIndicator progress = new ProgressIndicator(0);
-        progress.setVisible(false);
-        progress.setMaxSize(100d, 100d);
-        return progress;
     }
     
     /**
@@ -575,117 +674,10 @@ public class PhotoViewer extends Application {
      * jpg, jpeg, png, bmp and gif.
      */
     private boolean isValidImageFile(String url) {
-        List<String> imgTypes = Arrays.asList(".jpg", ".jpeg", ".png", ".gif", ".bmp");
+        List<String> imgTypes = Arrays.asList(".jpg", ".jpeg",
+                ".png", ".gif", ".bmp");
         return imgTypes.stream()
                        .anyMatch(t -> url.toLowerCase().endsWith(t));
-    }
-    
-    /**
-     * Adds the URL string representation of the path to the image file.
-     * Based on a URL the method will check if it matches supported 
-     * image format.
-     * @param url string representation of the path to the image file.
-     */
-    private void addImage(String url) {
-        if (isValidImageFile(url)) {
-            currentIndex +=1;
-            IMAGE_FILES.add(currentIndex, new ImageInfo(url));
-        }
-    }
-    
-    /**
-     * Returns the next index in the list of files to go to next.
-     * 
-     * @param direction PREV and NEXT to move backward or forward 
-     * in the list of pictures.
-     * @return int the index to the previous or next picture to be shown.
-     */
-    private int gotoImageIndex(ButtonMove direction) {
-        int size = IMAGE_FILES.size();
-        if (size == 0) {
-            currentIndex = -1;
-        } else if (direction == ButtonMove.NEXT 
-                && size > 1 
-                && currentIndex < size - 1) {
-            currentIndex += 1;
-        } else if (direction == ButtonMove.PREV
-                && size > 1 
-                && currentIndex > 0) {
-            currentIndex -= 1;
-        }
-
-        return currentIndex;
-    }
-    
-    /**
-     * Returns a worker task (Task) which will off-load the image 
-     * on a separate thread when finished; the current image will
-     * be displayed on the JavaFX application thread.
-     * @param imageUrl ImageInfo instance containing a url string
-     *                  representation of the path to the image file.
-     *                  The imageInfo also has the degrees in rotation.
-     * @return Task worker task to load image and display into ImageView control.
-     */
-    private Task<Image> createWorker(String imageUrl) {
-        return new Task<Image>() {
-            @Override
-            protected Image call() throws Exception {
-                // On the worker thread...
-                Image image = new Image(imageUrl, false);
-                return image;
-            }
-        };
-    }
-
-    public static void main(String[] args) {
-        launch(args);
-    }  
-}
-
-class ImageViewButtons extends Pane {
-
-    private Pane leftButton;
-    private Pane rightButton;
-
-    public ImageViewButtons() {
-
-        // create button panel
-        Pane buttonStackPane = new StackPane();
-        buttonStackPane.getStyleClass().add("button-pane");
-
-        // left arrow button
-        leftButton = new Pane();
-        Arc leftButtonArc = new Arc(0,12, 15, 15, -30, 60);
-        leftButton.getChildren().add(leftButtonArc);
-
-        leftButtonArc.setType(ArcType.ROUND);
-        leftButtonArc.getStyleClass().add("left-arrow");
-
-        // Right arrow button
-        rightButton = new Pane();
-        Arc rightButtonArc = new Arc(15, 12, 15, 15, 180-30, 60);
-        rightButton.getChildren().add(rightButtonArc);
-        rightButtonArc.setType(ArcType.ROUND);
-        rightButtonArc.getStyleClass().add("right-arrow");
-
-        HBox buttonHbox = new HBox();
-        buttonHbox.getStyleClass().add("button-panel");
-        HBox.setHgrow(leftButton, Priority.ALWAYS);
-        HBox.setHgrow(rightButton, Priority.ALWAYS);
-        HBox.setMargin(leftButton, new Insets(0,5,0,5));
-        HBox.setMargin(rightButton, new Insets(0,5,0,5));
-        buttonHbox.getChildren().addAll(leftButton, rightButton);
-
-        buttonStackPane.getChildren().addAll(buttonHbox);
-
-        getChildren().add(buttonStackPane);
-    }
-
-    public void setLeftButtonAction(EventHandler<MouseEvent> eventHandler) {
-        leftButton.addEventHandler(MouseEvent.MOUSE_PRESSED, eventHandler);
-    }
-    public void setRightButtonAction(EventHandler<MouseEvent> eventHandler) {
-        rightButton.addEventHandler(MouseEvent.MOUSE_PRESSED, eventHandler);
     }
 
 }

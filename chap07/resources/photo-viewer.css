@@ -1,8 +1,9 @@
 /*
-File: photo-viewer.css
-Book: JavaFX 9 Introduction by Example by Apress publishing
-Info: Graphics part 1
-Author: Carl Dea
+File        : photo-viewer.css
+Book        : JavaFX 9 by Example
+Company     : Apress publishing
+Description : Graphics part 1
+Author      : Carl Dea
 */
 .root {
     -fx-background-color: rgba(0, 0, 0, .75);

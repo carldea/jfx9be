@@ -8,7 +8,7 @@ import javafx.scene.effect.ColorAdjust;
  */
 public class ImageInfo {
     private String url;
-    private int degrees;
+    private double degrees;
     private ColorAdjust colorAdjust;
     private double translateY;
 
@@ -24,7 +24,7 @@ public class ImageInfo {
         this.url = url;
     }
 
-    public int getDegrees() {
+    public double getDegrees() {
         return degrees;
     }
 
@@ -40,7 +40,7 @@ public class ImageInfo {
         this.translateY = translateY;
     }
 
-    public void addDegrees(int degrees) {
+    public void addDegrees(double degrees) {
         this.degrees += degrees;
     }
 
