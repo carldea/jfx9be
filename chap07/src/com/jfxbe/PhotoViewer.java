@@ -547,11 +547,8 @@ public class PhotoViewer extends Application {
 
         // show spinner while image is loading
         progressIndicator.setVisible(true);
-        progressIndicator.progressProperty().unbind();
 
         Task<Image> loadImage = createWorker(imageInfo.getUrl());
-        progressIndicator.progressProperty()
-                         .bind(loadImage.progressProperty());
 
         // after loading has succeeded apply image info
         loadImage.setOnSucceeded(workerStateEvent -> {
@@ -637,9 +634,7 @@ public class PhotoViewer extends Application {
             Dragboard db = event.getDragboard(); 
             // image from the local file system.
             if (db.hasFiles() && !db.hasUrl()) {
-                db.getFiles()
-                  .stream()
-                  .forEach( file -> {
+                db.getFiles().forEach( file -> {
                     try {
                         String url = file.toURI().toURL().toString();
                         if (isValidImageFile(url)) {
