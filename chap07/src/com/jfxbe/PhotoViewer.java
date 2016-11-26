@@ -33,8 +33,6 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.jfxbe.PhotoViewer.COLOR_ADJ_TYPE.*;
-
 /**
  * A photo viewer application to demonstrate the JavaFX ImageView APIs.
  * Although you can use the menu options there are also keyboard
@@ -56,27 +54,22 @@ public class PhotoViewer extends Application {
             .getLogger(PhotoViewer.class.getName());
 
     /** Current image view display */
-    private ImageView _currentViewImage;
+    protected ImageView _currentViewImage;
 
     /** Rotation of the image view */
-    private Rotate _rotate = new Rotate();
+    protected Rotate _rotate = new Rotate();
 
     /** Color adjustment */
-    private ColorAdjust _colorAdjust = new ColorAdjust();
-
-    /** Types of color adjustments */
-    enum COLOR_ADJ_TYPE {
-        HUE, SATURATION, BRIGHTNESS, CONTRAST
-    }
+    protected ColorAdjust _colorAdjust = new ColorAdjust();
 
     /** A mapping of color adjustment type to a bound slider */
-    private Map<COLOR_ADJ_TYPE, Slider> _sliderLookupMap = new HashMap<>();
+    protected Map<String, Slider> _sliderLookupMap = new HashMap<>();
 
     /** Custom Button panel to view previous and next images */
-    private ImageViewButtons _buttonPanel;
+    protected ImageViewButtons _buttonPanel;
 
     /** Single threaded service for loading an image */
-    private ExecutorService _executorService =
+    protected ExecutorService _executorService =
             Executors.newSingleThreadScheduledExecutor();
 
     @Override
@@ -87,8 +80,9 @@ public class PhotoViewer extends Application {
         Scene scene = new Scene(root, 551, 400, Color.BLACK);
         scene.getStylesheets()
                 .add(getClass()
-                .getResource("/photo-viewer.css")
-                .toExternalForm());
+                        .getClassLoader()
+                        .getResource("photo-viewer.css")
+                        .toExternalForm());
         primaryStage.setScene(scene);
 
         // Anchor Pane
@@ -341,7 +335,7 @@ public class PhotoViewer extends Application {
      * height of the image view node.
      * @param degrees
      */
-    private void rotateImageView(double degrees) {
+    protected void rotateImageView(double degrees) {
         _rotate.setPivotX(_currentViewImage.getFitWidth()/2);
         _rotate.setPivotY(_currentViewImage.getFitHeight()/2);
         _rotate.setAngle(degrees);
@@ -356,26 +350,25 @@ public class PhotoViewer extends Application {
         Menu colorAdjustMenu = new Menu("Color Adjust");
         Consumer<Double> hueConsumer = (value) ->
             _colorAdjust.hueProperty().set(value);
-        MenuItem hueMenuItem = createSliderMenuItem("Hue",
-                HUE, hueConsumer);
+        MenuItem hueMenuItem = createSliderMenuItem("Hue", hueConsumer);
 
         Consumer<Double> saturationConsumer = (value) ->
                 _colorAdjust.setSaturation(value);
 
         MenuItem saturateMenuItem = createSliderMenuItem("Saturation",
-                SATURATION, saturationConsumer);
+                saturationConsumer);
 
         Consumer<Double> brightnessConsumer = (value) ->
                 _colorAdjust.setBrightness(value);
 
         MenuItem brightnessMenuItem = createSliderMenuItem("Brightness",
-                BRIGHTNESS, brightnessConsumer);
+                brightnessConsumer);
 
         Consumer<Double> contrastConsumer = (value) ->
                 _colorAdjust.setContrast(value);
 
         MenuItem contrastMenuItem = createSliderMenuItem("Contrast",
-                CONTRAST, contrastConsumer);
+                contrastConsumer);
 
         MenuItem resetMenuItem = new MenuItem("Restore to Original");
 
@@ -398,17 +391,15 @@ public class PhotoViewer extends Application {
      * Creates menu items containing slider controls for
      * color adjustments.
      * @param name Name of the color adjustment
-     * @param id the id or key for slider to be looked up.
      * @param c A closure from the caller to alter a
      *          color adjustment.
      * @return MenuItem A label with a slider.
      */
     private MenuItem createSliderMenuItem(String name,
-                                          COLOR_ADJ_TYPE id,
                                           Consumer<Double> c) {
 
         Slider slider = new Slider(-1, 1, 0);
-        _sliderLookupMap.put(id, slider);
+        _sliderLookupMap.put(name, slider);
         slider.valueProperty().addListener(ob ->
                 c.accept(slider.getValue()));
 
@@ -422,19 +413,19 @@ public class PhotoViewer extends Application {
      * When a picture is loaded or currently displayed the
      * sliders will take on the color adjustment values.
      */
-    private void updateSliders() {
+    protected void updateSliders() {
         _sliderLookupMap.forEach( (id, slider) -> {
             switch (id) {
-                case HUE:
+                case "Hue":
                     slider.setValue(_colorAdjust.getHue());
                     break;
-                case BRIGHTNESS:
+                case "Brightness":
                     slider.setValue(_colorAdjust.getBrightness());
                     break;
-                case SATURATION:
+                case "Saturation":
                     slider.setValue(_colorAdjust.getSaturation());
                     break;
-                case CONTRAST:
+                case "Contrast":
                     slider.setValue(_colorAdjust.getContrast());
                     break;
                 default:
@@ -540,7 +531,7 @@ public class PhotoViewer extends Application {
      * current image view node such as rotation and color adjustments.
      * @param progressIndicator node indicating load progress.
      */
-    private void loadAndDisplayImage(ProgressIndicator progressIndicator) {
+    protected void loadAndDisplayImage(ProgressIndicator progressIndicator) {
         if (_buttonPanel.getCurrentIndex() < 0) return;
 
         final ImageInfo imageInfo = _buttonPanel.getCurrentImageInfo();
@@ -595,7 +586,7 @@ public class PhotoViewer extends Application {
      * @return Task worker task to load image and display into ImageView
      * control.
      */
-    private Task<Image> createWorker(String imageUrl) {
+    protected Task<Image> createWorker(String imageUrl) {
         return new Task<Image>() {
             @Override
             protected Image call() throws Exception {

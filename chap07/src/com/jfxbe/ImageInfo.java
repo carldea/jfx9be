@@ -10,11 +10,9 @@ public class ImageInfo {
     private String url;
     private double degrees;
     private ColorAdjust colorAdjust;
-    private double translateY;
 
     public ImageInfo(String url) {
         this.url = url;
-        this.colorAdjust = new ColorAdjust();
     }
     public String getUrl() {
         return url;
@@ -28,23 +26,18 @@ public class ImageInfo {
         return degrees;
     }
 
-    public void setDegrees(int degrees) {
+    public void setDegrees(double degrees) {
         this.degrees = degrees;
     }
 
-    public double getTranslateY() {
-        return translateY;
-    }
-
-    public void setTranslateY(double translateY) {
-        this.translateY = translateY;
-    }
-
     public void addDegrees(double degrees) {
-        this.degrees += degrees;
+        setDegrees(this.degrees + degrees);
     }
 
     public ColorAdjust getColorAdjust() {
+        if (colorAdjust == null) {
+            colorAdjust = new ColorAdjust();
+        }
         return colorAdjust;
     }
 
