@@ -9,3 +9,5 @@
 
 # Runs each individual main apps in the jar as a library.
 java -cp mlib/chap07.jar com.jfxbe.PhotoViewer
+java -cp mlib/chap07.jar com.jfxbe.PointAndClickGame
+java -cp mlib/chap07.jar com.jfxbe.PhotoViewer2
