@@ -1,0 +1,35 @@
+/*
+@font-face {
+    font-family: 'Oswald-Bold';
+    font-style: normal;
+    font-weight: bold;
+    src: url('Oswald-Bold.ttf');
+}
+*/
+.meme-text {
+/*  -fx-font-family: "Oswald"; */
+    -fx-fill: white;
+    -fx-stroke: black;
+    -fx-stroke-width: 3.5;
+}
+
+.meme-text-field {
+/*    -fx-font-family: "Oswald"; */
+    -fx-text-fill: black;
+    -fx-control-inner-background: #00000000;
+    -fx-background-color: #00000000;
+    -fx-min-width: 20;
+}
+
+.text-container-on {
+    -fx-background-color: rgba(0,0,0, .20);
+    -fx-border-width: .5;
+    -fx-border-color: orange;
+    -fx-cursor: hand;
+}
+
+.text-container-off {
+    -fx-background-color: rgba(0,0,0, 0);
+    -fx-border-width: .5;
+    -fx-border-color: transparent;
+}
