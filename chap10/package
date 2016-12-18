@@ -1,3 +1,3 @@
 mkdir mlib
-cp -R resources classpath
+cp -R resources/* classpath
 jar -cvf mlib/chap10.jar -C classpath .

@@ -1,24 +1,24 @@
-/*
+
 @font-face {
-    font-family: 'Oswald-Bold';
+    font-family: 'Anton';
     font-style: normal;
     font-weight: bold;
-    src: url('Oswald-Bold.ttf');
+    src: url('Anton.ttf');
 }
-*/
+
 .meme-text {
-/*  -fx-font-family: "Oswald"; */
+    -fx-font-family: "Anton";
     -fx-fill: white;
     -fx-stroke: black;
-    -fx-stroke-width: 3.5;
+    -fx-stroke-width: 2.0;
 }
 
 .meme-text-field {
-/*    -fx-font-family: "Oswald"; */
+    -fx-font-family: "Anton";
     -fx-text-fill: black;
     -fx-control-inner-background: #00000000;
     -fx-background-color: #00000000;
-    -fx-min-width: 20;
+
 }
 
 .text-container-on {

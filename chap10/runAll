@@ -3,7 +3,9 @@ rm -rf classpath
 rm -rf mods
 mkdir classpath
 javac -d classpath src/com/jfxbe/*.java
+cp -r resources classpath
 cp -r resources/* classpath
+mkdir mlib
 mkdir mlib
 jar cvf mlib/chap10.jar -C classpath .
 java -cp mlib/chap10.jar com.jfxbe.MemeMaker

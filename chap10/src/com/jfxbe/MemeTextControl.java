@@ -47,19 +47,17 @@ public class MemeTextControl extends StackPane {
     public MemeTextControl(Scene scene, int fontSize) {
         getStyleClass().add("text-container-off");
 
-        Font memeTextFieldFont = Font.font("Oswald", FontWeight.BOLD, fontSize - 20);
-
         TextField textFieldPhrase = new TextField("MEME TEXT " + count++);
+        //textFieldPhrase.setPrefColumnCount(300);
         textFieldPhrase.getStyleClass().add("meme-text-field");
-        textFieldPhrase.setFont(memeTextFieldFont);
-/*        textFieldPhrase.setMinWidth(20);*/
-//        textFieldPhrase.setStyle("-fx-font-size: " + (fontSize-20) + ";");
+        textFieldPhrase.setMinWidth(200);
+        textFieldPhrase.setStyle("-fx-font-size: " + (fontSize-20) + ";");
 
-        Font memeTextFont = Font.font("Oswald", FontWeight.EXTRA_BOLD, fontSize);
+        Font memeTextFont = Font.font("Anton", FontWeight.EXTRA_BOLD, fontSize);
+        System.out.println("font: " + memeTextFont);
         Text textPhrase = new Text();
-        textPhrase.setFont(memeTextFont);
         textPhrase.getStyleClass().add("meme-text");
-//        textPhrase.setStyle("-fx-font-size: " + fontSize + ";");
+        textPhrase.setStyle("-fx-font-size: " + fontSize + ";");
         textPhrase.textProperty().bind(textFieldPhrase.textProperty());
 
 

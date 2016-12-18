@@ -17,7 +17,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -67,20 +66,16 @@ public class MemeMaker extends Application {
 
     @Override
     public void init() {
-        try {
-            Font.loadFont(
-                    MemeMaker.class
-                            .getClassLoader()
-                            .getResource("Oswald-Bold.ttf")
-                            .openStream(), 80);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            Font.getFamilies().forEach( font -> System.out.println(font.toString()));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Override
     public void start(Stage primaryStage) {
+
         primaryStage.setTitle("MemeMaker");
         BorderPane root = new BorderPane();
         Scene scene = new Scene(root, 551, 400, Color.WHITE);
@@ -308,22 +303,16 @@ public class MemeMaker extends Application {
         );
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("All Images",
-                        "*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif"),
-                new FileChooser.ExtensionFilter("JPG", "*.jpg"),
-                new FileChooser.ExtensionFilter("JPEG", "*.jpeg"),
-                new FileChooser.ExtensionFilter("PNG", "*.png"),
-                new FileChooser.ExtensionFilter("BMP", "*.bmp"),
-                new FileChooser.ExtensionFilter("GIF", "*.gif")
+                        "*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif")
         );
 
         menuItem.setOnAction( actionEvt -> {
-            List<File> list = fileChooser.showOpenMultipleDialog(primaryStage);
-            if (list != null && list.size() > 0) {
-                File file = list.get(0);
+            File imageFile = fileChooser.showOpenDialog(primaryStage);
+            if (imageFile != null) {
                 try {
-                    String url = file.toURI().toURL().toString();
+                    String url = imageFile.toURI().toURL().toString();
                     if (isValidImageFile(url)) {
-                        loadAndDisplayImage(progressIndicator);
+                        loadAndDisplayImage(progressIndicator, url);
                     }
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
@@ -405,15 +394,16 @@ public class MemeMaker extends Application {
      * Also, various image attributes will be applied to the
      * current image view node such as rotation and color adjustments.
      * @param progressIndicator node indicating load progress.
+     * @param url String of the url point to the image file.
      */
-    protected void loadAndDisplayImage(ProgressIndicator progressIndicator) {
+    protected void loadAndDisplayImage(ProgressIndicator progressIndicator, String url) {
 
 
         // show spinner while image is loading
         progressIndicator.setVisible(true);
 
-        String urlStr = String.valueOf(_currentViewImage.getUserData());
-        Task<Image> loadImage = createWorker(urlStr);
+        //String urlStr = String.valueOf(_currentViewImage.getUserData());
+        Task<Image> loadImage = createWorker(url);
 
         // after loading has succeeded apply image info
         loadImage.setOnSucceeded(workerStateEvent -> {
@@ -500,8 +490,7 @@ public class MemeMaker extends Application {
             }
 
             if (isValidImageFile(url)) {
-                _currentViewImage.setUserData(url);
-                loadAndDisplayImage(progressIndicator);
+                loadAndDisplayImage(progressIndicator, url);
             }
 
             event.setDropCompleted(true);
