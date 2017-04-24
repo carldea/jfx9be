@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Weather Widget</title>
+    <style type="text/css">
+        body { background-color:#ffffff; }
+            
+        .tileTextDisplay {
+            font-family: arial,sans-serif;
+            font-weight: lighter !important;
+            color: #878787 !important;
+        }
+        .largerFont {
+            font-size: x-large !important;
+        }
+        .mediumFont {
+            font-size: medium !important;
+        }
+        #weather-temp {
+            font-family: 'Arial', sans-serif;
+            font-size: 64px;
+            color: #212121 !important;
+        }
+        #unitType {
+            font-family: 'Arial', sans-serif;
+            font-size: 20px;
+            color: #000000 !important;
+        }
+    </style>
+    
+    <script>
+    var weekday=new Array(7);
+    weekday[0]="Sunday";
+    weekday[1]="Monday";
+    weekday[2]="Tuesday";
+    weekday[3]="Wednesday";
+    weekday[4]="Thursday";
+    weekday[5]="Friday";
+    weekday[6]="Saturday";
+
+    /* -- Step 2 --
+     * Up call to Java invoking the
+     * WeatherWidget.queryWeatherByLocationAndUnit() method.
+     */
+    function findWeatherByLocation() {
+        var cityInfo = encodeURIComponent(document.getElementById('search-field').value);
+        setInnerText("error-msg", "");
+        WeatherWidget.queryWeatherByLocationAndUnit(cityInfo, "c");
+    }
+
+    /* -- Step 5 --
+     * Populate UI with weather data.
+     * This function is called from Java code.
+     */
+    function populateWeatherData(json, unitType) {
+        var jsonWeather = json;
+        if (jsonWeather.cod) {
+            if (jsonWeather.cod != 200 ) {
+                document.getElementById('error-msg').innerHTML = jsonWeather.message;
+                alert(jsonWeather.message);
+                return;
+            }
+        }
+
+        setInnerText('city', jsonWeather.name);
+        setInnerText('country', jsonWeather.sys.country);
+
+        var weatherTime = new Date(jsonWeather.dt * 1000);
+        var timeStr = timeFormat(jsonWeather.dt * 1000);
+
+        setInnerText('weather-day-time', weekday[weatherTime.getDay()] + " " + timeStr) + " (Last Update)";
+        setInnerText('weather-current', jsonWeather.weather[0].main);
+        setInnerText('weather-current-desc', jsonWeather.weather[0].description);
+        document.getElementById('weather-icon').src = "http://openweathermap.org/img/w/" + jsonWeather.weather[0].icon + ".png";
+        setInnerText('weather-temp', jsonWeather.main.temp);
+        setInnerText('weather-humidity', "Humidity: " + jsonWeather.main.humidity + "%");
+        var windSpeed = (unitType === 'f') ? 'mph' : 'km/h';
+        setInnerText('weather-wind-speed', "Wind: " + jsonWeather.wind.speed + " " +windSpeed);
+
+    }
+
+    function setInnerText(id, text) {
+       document.getElementById(id).innerText = text; 
+    }
+
+    function timeFormat( millis ) {
+        var weatherTime = new Date(millis);
+        var hours = weatherTime.getHours();
+        var minutes = weatherTime.getMinutes();
+        var meridian = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // hour '0' means '12'
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        var timeStr = hours + ':' + minutes + ' ' + meridian;
+        return timeStr;
+    }
+
+    function init() {
+        // Apply listener to override enter key press.
+        document.getElementById('search-field')
+                .addEventListener("keypress", function(event){
+                    // Overide default enter key to fetch and
+                    // populate weather info.
+                    if(event.keyCode==13) {
+                        event.preventDefault();
+                        findWeatherByLocation();
+                        return;
+                    }
+                });
+    }
+    </script>
+    </head>
+    <body id="weather_background" onload="init();">
+        <form>
+            <input id="search-field" placeholder="City State, Country Code" type="text" name="searchField"/>
+            <!-- Step 1 - The user enters a city state and country -->
+            <input id="search-button" type="button" onclick="findWeatherByLocation()" name="searchButton" value="Search"/>
+        </form>
+        <div id="error-msg"></div>
+        <div id="city" class="tileTextDisplay largerFont"></div>
+        <div id="country" class="tileTextDisplay mediumFont"></div>
+        <div id="weather-day-time" class="tileTextDisplay mediumFont"></div>
+        <div id="weather-current" class="tileTextDisplay mediumFont"></div>
+        <div id="weather-current-desc" class="tileTextDisplay mediumFont"></div>
+        <div>
+            <img id="weather-icon" style="float:left;height:64px;width:64px" src="" alt=""/>
+            <div id="weather-temp" style="padding-left:10px; float:left;"></div>
+            <div style="float:left; font-size:20px; margin-top:6px">
+                <span style="display:inline">&deg;<span id="unitType">C</span></span>
+            </div>
+        </div>
+        <div style="clear:both;"></div>
+        <div id="weather-humidity" class="tileTextDisplay mediumFont"></div>
+        <div id="weather-wind-speed" class="tileTextDisplay mediumFont"></div>
+    </body>
+</html>
