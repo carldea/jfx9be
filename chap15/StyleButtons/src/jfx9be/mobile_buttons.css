@@ -1,0 +1,46 @@
+/**
+ * Name     : mobile_buttons.css
+ * Publisher: Apress
+ * Author   : Carl Dea
+ *
+ */
+.root {
+    -fx-background-color: white;
+    -fx-font-size: 20px;
+    bright-green: rgb(59,223, 86);
+    bluish-gray: rgb(189,218,230);
+}
+.num-pad {
+    -fx-padding: 15px, 15px, 15px, 15px;
+    -fx-hgap: 10px;
+    -fx-vgap: 8px;
+}
+.num-button {
+    -fx-background-color: white,  
+        bluish-gray,   
+        white;
+    -fx-background-radius: 50%;
+    -fx-background-insets: 0, 1, 2;
+    -fx-font-family: "Helvetica";
+    -fx-text-fill: black;   
+}
+.num-button:hover {
+    -fx-background-color: black,  
+        white,   
+        black;
+    -fx-text-fill: white;
+}
+#call-button {
+   -fx-background-color: white, bright-green;
+   -fx-background-radius: 2;
+   -fx-background-insets: 0, 1;
+   -fx-font-family: "Helvetica";
+   -fx-text-fill: white;
+}
+#call-button:hover {
+   -fx-background-color: bright-green, white;
+   -fx-background-radius: 2;
+   -fx-background-insets: 0, 1;
+   -fx-font-family: "Helvetica";
+   -fx-text-fill: bright-green;
+}

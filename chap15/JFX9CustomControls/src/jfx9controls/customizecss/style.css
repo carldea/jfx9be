@@ -1,0 +1,36 @@
+/*
+ * Copyright (c) 2013. by Gerrit Grunwald
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.my-button {
+    -fx-base                    : #545454;
+    -fx-background              : #F4F4F4;
+    -fx-focus-color             : #FF0000;
+    -fx-control-inner-background: #FFFFFF;
+    -fx-background-insets       : 0 0 -1 0, 0, 3, 4;
+    -fx-inner-border            : linear-gradient(to bottom,
+                                                  derive(-fx-color,74.0%) 0%,
+                                                  derive(-fx-color,36.4%) 100%);
+    -fx-body-color              : linear-gradient(to bottom,
+                                                  derive(-fx-color, 35.0%) 0%,
+                                                  derive(-fx-color, -6.0%) 100%);
+}
+
+.my-button:focused {
+    -fx-background-insets: -1.4, 0, 3, 4;
+}
+.my-button:hover {
+    -fx-hover-base: lightgray;
+}

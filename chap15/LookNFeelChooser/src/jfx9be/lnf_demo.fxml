@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="427.0" prefWidth="596.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<children><Accordion layoutX="102.0" layoutY="129.5" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" xmlns:fx="http://javafx.com/fxml">
+  <panes>
+    <TitledPane animated="false" text="Buttons">
+      <content>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+<children><GridPane layoutX="38.5" layoutY="82.5" prefHeight="259.0" prefWidth="421.0" xmlns:fx="http://javafx.com/fxml">
+  <columnConstraints>
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+<children><RadioButton mnemonicParsing="false" selected="true" text="RadioButton" GridPane.columnIndex="0" GridPane.rowIndex="1" /><Button mnemonicParsing="false" text="Button" GridPane.columnIndex="0" GridPane.rowIndex="0" /><ToggleButton mnemonicParsing="false" text="ToggleButton" GridPane.columnIndex="1" /><CheckBox layoutX="147.7890625" layoutY="74.5" mnemonicParsing="false" selected="true" text="CheckBox" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+</children>
+</GridPane>
+</children></AnchorPane>
+      </content>
+    </TitledPane>
+    <TitledPane animated="false" text="Progress Controls">
+      <content>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+<children><ProgressBar layoutX="88.0" layoutY="55.0" prefWidth="200.0" progress="0.49" /><ProgressIndicator layoutX="168.5" layoutY="99.0" progress="0.67" />
+</children></AnchorPane>
+      </content>
+    </TitledPane><TitledPane animated="false" text="Scroll Bars &amp; Sliders" xmlns:fx="http://javafx.com/fxml">
+  <content>
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+<children><ScrollBar layoutX="94.0" layoutY="31.0" prefHeight="14.0" prefWidth="312.0" /><ScrollBar layoutX="33.0" layoutY="29.0" orientation="VERTICAL" prefHeight="210.0" prefWidth="14.0" /><Slider layoutX="94.0" layoutY="145.0" prefHeight="14.0" prefWidth="310.0" /><Slider layoutX="463.0" layoutY="36.0" orientation="VERTICAL" prefHeight="206.0" prefWidth="14.0" />
+</children></AnchorPane>
+  </content>
+</TitledPane>
+  </panes>
+</Accordion>
+</children></AnchorPane>

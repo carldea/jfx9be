@@ -1,0 +1,94 @@
+/**
+ * Name: JavaFX Sky look n feel
+ * Publisher: Apress
+ * Author: Carl Dea
+ * 
+ */
+.root {
+    -fx-font-size: 14pt;
+    -fx-font-family: "LucidaBrightDemiBold";
+    -fx-background: sky-blue;
+    -fx-base: rgb(250, 250, 250);
+    -fx-focus-color: derive( sky-blue , 90% );
+    sky-blue: rgb(17, 145, 213);
+    brighter-sky-blue: derive( sky-blue , 50% );
+}
+.menu:pressed {
+ -fx-background: brighter-sky-blue; 
+ -fx-background-color: sky-blue; 
+ -fx-text-fill: white; 
+}
+.menu:hover > .label {
+ -fx-background: brighter-sky-blue; 
+ -fx-background-color: sky-blue; 
+ -fx-text-fill: white; 
+}
+.menu-bar .menu:selected {
+ -fx-background: brighter-sky-blue; 
+ -fx-background-color: sky-blue; 
+ -fx-text-fill: white; 
+}
+
+.menu-bar .menu-item:selected {
+ -fx-background: rgb(17, 145, 213); 
+ -fx-background-color: derive( rgb(17, 145, 213), 50%);
+ -fx-text-fill: white; 
+}
+
+.menu-bar .menu-item:focused {
+ -fx-background: rgb(17, 145, 213); 
+ -fx-background-color: derive( rgb(17, 145, 213), 50%);
+ -fx-text-fill: white; 
+}
+
+.toggle-button{
+    -fx-text-fill: brighter-sky-blue;
+    -fx-border-color: rgba(255, 255, 255, .80);
+    -fx-border-radius: 8;
+    -fx-padding: 6 6 6 6;
+    -fx-font: bold italic 20pt "LucidaBrightDemiBold";
+}
+
+.radio-button:selected .radio .dot {
+    -fx-background-color:brighter-sky-blue;
+}
+.check-box:selected .mark {
+    -fx-background-color:brighter-sky-blue;
+}
+
+.scroll-bar:horizontal .thumb {
+ -fx-background-color: brighter-sky-blue;
+}
+.scroll-bar:vertical .thumb {
+ -fx-background-color: brighter-sky-blue;
+}
+
+.slider .thumb {
+ -fx-background-color: brighter-sky-blue;
+}
+
+.progress-bar .bar {
+  -fx-box-border: brighter-sky-blue;
+  -fx-accent: brighter-sky-blue;
+}
+.progress-indicator{
+  -fx-progress-color: brighter-sky-blue;
+}
+.progress-indicator .percentage {
+  -fx-fill: rgb(255, 255, 255);
+}
+
+.button{
+    -fx-text-fill: brighter-sky-blue;
+    -fx-border-color: rgba(255, 255, 255, .80);
+    -fx-border-radius: 8;
+    -fx-padding: 6 6 6 6;
+    -fx-font: bold italic 20pt "LucidaBrightDemiBold";
+}
+
+.borders{
+    -fx-border-color: rgba(255, 255, 255, .80);
+    -fx-border-style: dotted;
+    -fx-border-width: 1;
+    -fx-border-insets: -2;
+}
