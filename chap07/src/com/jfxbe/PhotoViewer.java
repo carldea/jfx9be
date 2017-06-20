@@ -54,22 +54,22 @@ public class PhotoViewer extends Application {
             .getLogger(PhotoViewer.class.getName());
 
     /** Current image view display */
-    protected ImageView _currentViewImage;
+    protected ImageView currentViewImage;
 
     /** Rotation of the image view */
-    protected Rotate _rotate = new Rotate();
+    protected Rotate rotate = new Rotate();
 
     /** Color adjustment */
-    protected ColorAdjust _colorAdjust = new ColorAdjust();
+    protected ColorAdjust colorAdjust = new ColorAdjust();
 
     /** A mapping of color adjustment type to a bound slider */
-    protected Map<String, Slider> _sliderLookupMap = new HashMap<>();
+    protected Map<String, Slider> sliderLookupMap = new HashMap<>();
 
     /** Custom Button panel to view previous and next images */
-    protected ImageViewButtons _buttonPanel;
+    protected ImageViewButtons buttonPanel;
 
     /** Single threaded service for loading an image */
-    protected ExecutorService _executorService =
+    protected ExecutorService executorService =
             Executors.newSingleThreadScheduledExecutor();
 
     @Override
@@ -94,19 +94,19 @@ public class PhotoViewer extends Application {
         AnchorPane.setLeftAnchor(imageGroup, 0.0);
 
         // Current image view
-        _currentViewImage = createImageView(_rotate);
-        imageGroup.getChildren().add(_currentViewImage);
+        currentViewImage = createImageView(rotate);
+        imageGroup.getChildren().add(currentViewImage);
 
         // Custom ButtonPanel (Next, Previous)
         List<ImageInfo> IMAGE_FILES = new ArrayList<>();
-        _buttonPanel = new ImageViewButtons(IMAGE_FILES);
+        buttonPanel = new ImageViewButtons(IMAGE_FILES);
 
         // Create a progress indicator
         ProgressIndicator progressIndicator = createProgressIndicator();
 
         // layer items. Items that are last are on top
         mainContentPane.getChildren().addAll(imageGroup,
-                _buttonPanel, progressIndicator);
+                buttonPanel, progressIndicator);
 
         // Create menus File, Rotate, Color adjust menus
         Menu fileMenu = createFileMenu(primaryStage, progressIndicator);
@@ -134,7 +134,7 @@ public class PhotoViewer extends Application {
     public void stop() throws Exception {
         super.stop();
         // Shutdown thread service
-        _executorService.shutdown();
+        executorService.shutdown();
     }
 
     public static void main(String[] args) {
@@ -247,7 +247,7 @@ public class PhotoViewer extends Application {
                     try {
                         String url = file.toURI().toURL().toString();
                         if (isValidImageFile(url)) {
-                            _buttonPanel.addImage(url);
+                            this.buttonPanel.addImage(url);
                             loadAndDisplayImage(progressIndicator);
                         }
                     } catch (MalformedURLException e) {
@@ -272,7 +272,7 @@ public class PhotoViewer extends Application {
             File fileSave = fileChooser.showSaveDialog(primaryStage);
             if (fileSave != null) {
 
-                WritableImage image = _currentViewImage.snapshot(
+                WritableImage image = currentViewImage.snapshot(
                         new SnapshotParameters(), null);
 
                 try {
@@ -323,7 +323,7 @@ public class PhotoViewer extends Application {
     protected void wireupRotateAngleBy(MenuItem menuItem, double angleDegrees) {
         // rotate options
         menuItem.setOnAction(actionEvent -> {
-            ImageInfo imageInfo = _buttonPanel.getCurrentImageInfo();
+            ImageInfo imageInfo = buttonPanel.getCurrentImageInfo();
             imageInfo.addDegrees(angleDegrees);
             rotateImageView(imageInfo.getDegrees());
         });
@@ -336,9 +336,9 @@ public class PhotoViewer extends Application {
      * @param degrees
      */
     protected void rotateImageView(double degrees) {
-        _rotate.setPivotX(_currentViewImage.getFitWidth()/2);
-        _rotate.setPivotY(_currentViewImage.getFitHeight()/2);
-        _rotate.setAngle(degrees);
+        rotate.setPivotX(currentViewImage.getFitWidth()/2);
+        rotate.setPivotY(currentViewImage.getFitHeight()/2);
+        rotate.setAngle(degrees);
     }
 
     /**
@@ -349,23 +349,23 @@ public class PhotoViewer extends Application {
     private Menu createColorAdjustMenu() {
         Menu colorAdjustMenu = new Menu("Color Adjust");
         Consumer<Double> hueConsumer = (value) ->
-            _colorAdjust.hueProperty().set(value);
+            colorAdjust.hueProperty().set(value);
         MenuItem hueMenuItem = createSliderMenuItem("Hue", hueConsumer);
 
         Consumer<Double> saturationConsumer = (value) ->
-                _colorAdjust.setSaturation(value);
+                colorAdjust.setSaturation(value);
 
         MenuItem saturateMenuItem = createSliderMenuItem("Saturation",
                 saturationConsumer);
 
         Consumer<Double> brightnessConsumer = (value) ->
-                _colorAdjust.setBrightness(value);
+                colorAdjust.setBrightness(value);
 
         MenuItem brightnessMenuItem = createSliderMenuItem("Brightness",
                 brightnessConsumer);
 
         Consumer<Double> contrastConsumer = (value) ->
-                _colorAdjust.setContrast(value);
+                colorAdjust.setContrast(value);
 
         MenuItem contrastMenuItem = createSliderMenuItem("Contrast",
                 contrastConsumer);
@@ -373,10 +373,10 @@ public class PhotoViewer extends Application {
         MenuItem resetMenuItem = new MenuItem("Restore to Original");
 
         resetMenuItem.setOnAction(actionEvent -> {
-            _colorAdjust.setHue(0);
-            _colorAdjust.setContrast(0);
-            _colorAdjust.setBrightness(0);
-            _colorAdjust.setSaturation(0);
+            colorAdjust.setHue(0);
+            colorAdjust.setContrast(0);
+            colorAdjust.setBrightness(0);
+            colorAdjust.setSaturation(0);
             updateSliders();
         });
 
@@ -399,7 +399,7 @@ public class PhotoViewer extends Application {
                                           Consumer<Double> c) {
 
         Slider slider = new Slider(-1, 1, 0);
-        _sliderLookupMap.put(name, slider);
+        sliderLookupMap.put(name, slider);
         slider.valueProperty().addListener(ob ->
                 c.accept(slider.getValue()));
 
@@ -414,19 +414,19 @@ public class PhotoViewer extends Application {
      * sliders will take on the color adjustment values.
      */
     protected void updateSliders() {
-        _sliderLookupMap.forEach( (id, slider) -> {
+        sliderLookupMap.forEach( (id, slider) -> {
             switch (id) {
                 case "Hue":
-                    slider.setValue(_colorAdjust.getHue());
+                    slider.setValue(colorAdjust.getHue());
                     break;
                 case "Brightness":
-                    slider.setValue(_colorAdjust.getBrightness());
+                    slider.setValue(colorAdjust.getBrightness());
                     break;
                 case "Saturation":
-                    slider.setValue(_colorAdjust.getSaturation());
+                    slider.setValue(colorAdjust.getSaturation());
                     break;
                 case "Contrast":
-                    slider.setValue(_colorAdjust.getContrast());
+                    slider.setValue(colorAdjust.getContrast());
                     break;
                 default:
                     slider.setValue(0);
@@ -446,9 +446,9 @@ public class PhotoViewer extends Application {
         // make the custom button panel float bottom right
         Runnable repositionButtonPanel = () -> {
             // update buttonPanel's x
-            _buttonPanel.setTranslateX(scene.getWidth() - 75);
+            buttonPanel.setTranslateX(scene.getWidth() - 75);
             // update buttonPanel's y
-            _buttonPanel.setTranslateY(scene.getHeight() - 75);
+            buttonPanel.setTranslateY(scene.getHeight() - 75);
         };
 
         // make the progress indicator float in the center
@@ -476,19 +476,19 @@ public class PhotoViewer extends Application {
         repositionCode.run();
 
         // resize image view when scene is resized.
-        _currentViewImage.fitWidthProperty()
+        currentViewImage.fitWidthProperty()
                         .bind(scene.widthProperty());
 
         // view previous image action
         Runnable viewPreviousAction = () -> {
             // if no previous image or currently loading.
-            if (_buttonPanel.isAtBeginning()) return;
-            else _buttonPanel.goPrevious();
+            if (buttonPanel.isAtBeginning()) return;
+            else buttonPanel.goPrevious();
             loadAndDisplayImage(progressIndicator);
         };
 
         // attach left button action
-        _buttonPanel.setLeftButtonAction( mouseEvent ->
+        buttonPanel.setLeftButtonAction( mouseEvent ->
                 viewPreviousAction.run());
 
         // Left arrow key stroke pressed action
@@ -502,13 +502,13 @@ public class PhotoViewer extends Application {
         // view next image action
         Runnable viewNextAction = () -> {
             // if no next image or currently loading.
-            if (_buttonPanel.isAtEnd()) return;
-            else _buttonPanel.goNext();
+            if (buttonPanel.isAtEnd()) return;
+            else buttonPanel.goNext();
             loadAndDisplayImage(progressIndicator);
         };
 
         // attach right button action
-        _buttonPanel.setRightButtonAction( mouseEvent ->
+        buttonPanel.setRightButtonAction( mouseEvent ->
                 viewNextAction.run());
 
         // Right arrow key stroke pressed action
@@ -532,9 +532,9 @@ public class PhotoViewer extends Application {
      * @param progressIndicator node indicating load progress.
      */
     protected void loadAndDisplayImage(ProgressIndicator progressIndicator) {
-        if (_buttonPanel.getCurrentIndex() < 0) return;
+        if (buttonPanel.getCurrentIndex() < 0) return;
 
-        final ImageInfo imageInfo = _buttonPanel.getCurrentImageInfo();
+        final ImageInfo imageInfo = buttonPanel.getCurrentImageInfo();
 
         // show spinner while image is loading
         progressIndicator.setVisible(true);
@@ -546,14 +546,14 @@ public class PhotoViewer extends Application {
 
             try {
 
-                _currentViewImage.setImage(loadImage.get());
+                currentViewImage.setImage(loadImage.get());
 
                 // Rotate image view
                 rotateImageView(imageInfo.getDegrees());
 
                 // Apply color adjust
-                _colorAdjust = imageInfo.getColorAdjust();
-                _currentViewImage.setEffect(_colorAdjust);
+                colorAdjust = imageInfo.getColorAdjust();
+                currentViewImage.setEffect(colorAdjust);
 
                 // update the menu items containing slider controls
                 updateSliders();
@@ -573,7 +573,7 @@ public class PhotoViewer extends Application {
         loadImage.setOnFailed(workerStateEvent ->
                 progressIndicator.setVisible(false));
 
-        _executorService.submit(loadImage);
+        executorService.submit(loadImage);
     }
 
     /**
@@ -629,7 +629,7 @@ public class PhotoViewer extends Application {
                     try {
                         String url = file.toURI().toURL().toString();
                         if (isValidImageFile(url)) {
-                            _buttonPanel.addImage(url);
+                            buttonPanel.addImage(url);
                         }
 
                     } catch (MalformedURLException ex) {
@@ -640,7 +640,7 @@ public class PhotoViewer extends Application {
                 String url = db.getUrl();
                 LOGGER.log(Level.                        FINE, "dropped url: "+ db.getUrl());
                 if (isValidImageFile(url)) {
-                    _buttonPanel.addImage(url);
+                    buttonPanel.addImage(url);
                 }
             }
 

@@ -45,9 +45,9 @@ public class PhotoViewer2 extends PhotoViewer {
      * @param progressIndicator node indicating load progress.
      */
     protected void loadAndDisplayImage(ProgressIndicator progressIndicator) {
-        if (_buttonPanel.getCurrentIndex() < 0) return;
+        if (buttonPanel.getCurrentIndex() < 0) return;
 
-        final ImageInfo imageInfo = _buttonPanel.getCurrentImageInfo();
+        final ImageInfo imageInfo = buttonPanel.getCurrentImageInfo();
 
         // show spinner while image is loading
         progressIndicator.setVisible(true);
@@ -76,31 +76,31 @@ public class PhotoViewer2 extends PhotoViewer {
         loadImage.setOnFailed(workerStateEvent ->
                 progressIndicator.setVisible(false));
 
-        _executorService.submit(loadImage);
+        executorService.submit(loadImage);
     }
 
     private SequentialTransition transitionByFading(Image nextImage,
                                                     ImageInfo imageInfo) {
         // fade out image view node
         FadeTransition fadeOut =
-                new FadeTransition(Duration.millis(500), _currentViewImage);
+                new FadeTransition(Duration.millis(500), currentViewImage);
         fadeOut.setFromValue(1.0);
         fadeOut.setToValue(0.0);
         fadeOut.setOnFinished(actionEvent -> {
-            _currentViewImage.setImage(nextImage);
+            currentViewImage.setImage(nextImage);
             // Rotate image view
             rotateImageView(imageInfo.getDegrees());
 
             // Apply color adjust
-            _colorAdjust = imageInfo.getColorAdjust();
-            _currentViewImage.setEffect(_colorAdjust);
+            colorAdjust = imageInfo.getColorAdjust();
+            currentViewImage.setEffect(colorAdjust);
 
             // update the menu items containing slider controls
             updateSliders();
         });
         // fade in image view node
         FadeTransition fadeIn =
-                new FadeTransition(Duration.millis(500), _currentViewImage);
+                new FadeTransition(Duration.millis(500), currentViewImage);
         fadeIn.setFromValue(0.0);
         fadeIn.setToValue(1.0);
 

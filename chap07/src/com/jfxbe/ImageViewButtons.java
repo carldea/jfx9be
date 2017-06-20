@@ -17,85 +17,85 @@ import java.util.List;
  */
 public class ImageViewButtons extends Pane {
     /** The current index into the IMAGE_FILES list. */
-    private int _currentIndex = -1;
+    private int currentIndex = -1;
 
     /** Enumeration of next and previous button directions */
     public enum ButtonMove {NEXT, PREV}
 
     /** List of ImageInfo instances. */
-    private List<ImageInfo> _imageFiles;
+    private List<ImageInfo> imageFiles;
 
-    private Pane _leftButton;
-    private Pane _rightButton;
+    private Pane leftButton;
+    private Pane rightButton;
 
     public ImageViewButtons(List<ImageInfo> imageFiles) {
-        _imageFiles = imageFiles;
+        imageFiles = imageFiles;
 
         // create button panel
         Pane buttonStackPane = new StackPane();
         buttonStackPane.getStyleClass().add("button-pane");
 
         // left arrow button
-        _leftButton = new Pane();
+        leftButton = new Pane();
         Arc leftButtonArc = new Arc(0,12, 15, 15, -30, 60);
-        _leftButton.getChildren().add(leftButtonArc);
+        leftButton.getChildren().add(leftButtonArc);
 
         leftButtonArc.setType(ArcType.ROUND);
         leftButtonArc.getStyleClass().add("left-arrow");
 
         // Right arrow button
-        _rightButton = new Pane();
+        rightButton = new Pane();
         Arc rightButtonArc = new Arc(15, 12, 15, 15, 180-30, 60);
-        _rightButton.getChildren().add(rightButtonArc);
+        rightButton.getChildren().add(rightButtonArc);
         rightButtonArc.setType(ArcType.ROUND);
         rightButtonArc.getStyleClass().add("right-arrow");
 
         HBox buttonHbox = new HBox();
         buttonHbox.getStyleClass().add("button-panel");
-        HBox.setHgrow(_leftButton, Priority.ALWAYS);
-        HBox.setHgrow(_rightButton, Priority.ALWAYS);
-        HBox.setMargin(_leftButton, new Insets(0,5,0,5));
-        HBox.setMargin(_rightButton, new Insets(0,5,0,5));
-        buttonHbox.getChildren().addAll(_leftButton, _rightButton);
+        HBox.setHgrow(leftButton, Priority.ALWAYS);
+        HBox.setHgrow(rightButton, Priority.ALWAYS);
+        HBox.setMargin(leftButton, new Insets(0,5,0,5));
+        HBox.setMargin(rightButton, new Insets(0,5,0,5));
+        buttonHbox.getChildren().addAll(leftButton, rightButton);
 
         buttonStackPane.getChildren().addAll(buttonHbox);
 
         getChildren().add(buttonStackPane);
     }
     public boolean isAtBeginning() {
-        return _currentIndex == 0;
+        return currentIndex == 0;
     }
     public boolean isAtEnd() {
-        return _currentIndex == _imageFiles.size()-1;
+        return currentIndex == imageFiles.size()-1;
     }
 
     public void goPrevious() {
-        _currentIndex = gotoImageIndex(ButtonMove.PREV);
+        currentIndex = gotoImageIndex(ButtonMove.PREV);
     }
     public void goNext() {
-        _currentIndex = gotoImageIndex(ButtonMove.NEXT);
+        currentIndex = gotoImageIndex(ButtonMove.NEXT);
     }
     private int gotoImageIndex(ButtonMove direction) {
-        int size = _imageFiles.size();
+        int size = imageFiles.size();
         if (size == 0) {
-            _currentIndex = -1;
+            currentIndex = -1;
         } else if (direction == ButtonMove.NEXT
                 && size > 1
-                && _currentIndex < size - 1) {
-            _currentIndex += 1;
+                && currentIndex < size - 1) {
+            currentIndex += 1;
         } else if (direction == ButtonMove.PREV
                 && size > 1
-                && _currentIndex > 0) {
-            _currentIndex -= 1;
+                && currentIndex > 0) {
+            currentIndex -= 1;
         }
 
-        return _currentIndex;
+        return currentIndex;
     }
     public int getCurrentIndex() {
-        return _currentIndex;
+        return currentIndex;
     }
     public ImageInfo getCurrentImageInfo() {
-        return _imageFiles.get(getCurrentIndex());
+        return imageFiles.get(getCurrentIndex());
     }
 
     /**
@@ -105,14 +105,14 @@ public class ImageViewButtons extends Pane {
      * @param url string representation of the path to the image file.
      */
     public void addImage(String url) {
-        _currentIndex +=1;
-        _imageFiles.add(_currentIndex, new ImageInfo(url));
+        currentIndex +=1;
+        imageFiles.add(currentIndex, new ImageInfo(url));
     }
     public void setLeftButtonAction(EventHandler<MouseEvent> eventHandler) {
-        _leftButton.addEventHandler(MouseEvent.MOUSE_PRESSED, eventHandler);
+        leftButton.addEventHandler(MouseEvent.MOUSE_PRESSED, eventHandler);
     }
     public void setRightButtonAction(EventHandler<MouseEvent> eventHandler) {
-        _rightButton.addEventHandler(MouseEvent.MOUSE_PRESSED, eventHandler);
+        rightButton.addEventHandler(MouseEvent.MOUSE_PRESSED, eventHandler);
     }
 
 }
