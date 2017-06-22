@@ -113,6 +113,7 @@ public class BackgroundProcesses extends Application {
             progressIndicator.setProgress(0);
             textArea.appendText("File transfer was cancelled.");
         });
+        cancelButton.setDisable(true);
 
         primaryStage.setScene(scene);
         primaryStage.show();

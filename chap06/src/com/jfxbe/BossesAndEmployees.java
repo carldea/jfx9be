@@ -15,11 +15,14 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import static com.jfxbe.Person.MOOD_TYPES;
+import static com.jfxbe.Person.MOOD_TYPES.*;
 
 /**
- * A JavaFX example application to demonstrate observable lists used in ListViews,
- * and TableViews. Also this demos the use of domain objects with properties as
- * attributes.
+ * A JavaFX example application to demonstrate
+ * observable lists used in ListViews, and TableViews.
+ * Also this demos the use of domain objects with
+ * properties as attributes.
  *
  * Bosses and Employees
  * @author cdea
@@ -82,18 +85,21 @@ public class BossesAndEmployees extends Application {
         employeeTableView.setItems(teamMembers);
 
         TableColumn<Person, String> aliasNameCol = new TableColumn<>("Alias");
-        aliasNameCol.setCellValueFactory(new PropertyValueFactory<Person,String>("aliasName"));
+        aliasNameCol.setCellValueFactory(new PropertyValueFactory<>("aliasName"));
         aliasNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
 
         TableColumn<Person, String> firstNameCol = new TableColumn<>("First Name");
-        firstNameCol.setCellValueFactory(new PropertyValueFactory<Person,String>("firstName"));
+        firstNameCol.setCellValueFactory(new PropertyValueFactory<>("firstName"));
+        firstNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
+
 
         TableColumn<Person, String> lastNameCol = new TableColumn<>("Last Name");
-        lastNameCol.setCellValueFactory(new PropertyValueFactory<Person,String>("lastName"));
+        lastNameCol.setCellValueFactory(new PropertyValueFactory<>("lastName"));
+        lastNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
 
-        TableColumn<Person, Person.MOOD_TYPES> moodCol = new TableColumn<>("Mood");
-        moodCol.setCellValueFactory(new PropertyValueFactory<Person,Person.MOOD_TYPES>("mood"));
-        ObservableList<Person.MOOD_TYPES> moods = FXCollections.observableArrayList(Person.MOOD_TYPES.values());
+        TableColumn<Person, MOOD_TYPES> moodCol = new TableColumn<>("Mood");
+        moodCol.setCellValueFactory(new PropertyValueFactory<>("mood"));
+        ObservableList<MOOD_TYPES> moods = FXCollections.observableArrayList(MOOD_TYPES.values());
         moodCol.setCellFactory(ComboBoxTableCell.forTableColumn(moods));
         moodCol.setPrefWidth(100);
         employeeTableView.getColumns().add(aliasNameCol);
@@ -121,22 +127,22 @@ public class BossesAndEmployees extends Application {
     private ObservableList<Person> getPeople() {
         ObservableList<Person> people = FXCollections.<Person>observableArrayList();
 
-        Person docX = new Person("Professor X", "Charles", "Xavier", Person.MOOD_TYPES.Positive);
-        docX.employeesProperty().add(new Person("Wolverine", "James", "Howlett", Person.MOOD_TYPES.Angry));
-        docX.employeesProperty().add(new Person("Cyclops", "Scott", "Summers", Person.MOOD_TYPES.Happy));
-        docX.employeesProperty().add(new Person("Storm", "Ororo", "Munroe", Person.MOOD_TYPES.Positive));
+        Person docX = new Person("Professor X", "Charles", "Xavier", Positive);
+        docX.employeesProperty().add(new Person("Wolverine", "James", "Howlett", Angry));
+        docX.employeesProperty().add(new Person("Cyclops", "Scott", "Summers", Happy));
+        docX.employeesProperty().add(new Person("Storm", "Ororo", "Munroe", Positive));
 
-        Person magneto = new Person("Magneto", "Max", "Eisenhardt", Person.MOOD_TYPES.Sad);
-        magneto.employeesProperty().add(new Person("Juggernaut", "Cain", "Marko", Person.MOOD_TYPES.Angry));
-        magneto.employeesProperty().add(new Person("Mystique", "Raven", "Darkhölme", Person.MOOD_TYPES.Sad));
-        magneto.employeesProperty().add(new Person("Sabretooth", "Victor", "Creed", Person.MOOD_TYPES.Angry));
+        Person magneto = new Person("Magneto", "Max", "Eisenhardt", Sad);
+        magneto.employeesProperty().add(new Person("Juggernaut", "Cain", "Marko", Angry));
+        magneto.employeesProperty().add(new Person("Mystique", "Raven", "Darkhölme", Sad));
+        magneto.employeesProperty().add(new Person("Sabretooth", "Victor", "Creed", Angry));
 
-        Person biker = new Person("Mountain Biker", "Jonathan", "Gennick", Person.MOOD_TYPES.Positive);
-        biker.employeesProperty().add(new Person("MkHeck", "Mark", "Heckler", Person.MOOD_TYPES.Happy));
-        biker.employeesProperty().add(new Person("Hansolo", "Gerrit", "Grunwald", Person.MOOD_TYPES.Positive));
-        biker.employeesProperty().add(new Person("Doc", "José", "Pereda", Person.MOOD_TYPES.Happy));
-        biker.employeesProperty().add(new Person("Cosmonaut", "Sean", "Phillips", Person.MOOD_TYPES.Positive));
-        biker.employeesProperty().add(new Person("D-Man", "Carl", "Dea", Person.MOOD_TYPES.Happy));
+        Person biker = new Person("Mountain Biker", "Jonathan", "Gennick", Positive);
+        biker.employeesProperty().add(new Person("MkHeck", "Mark", "Heckler", Happy));
+        biker.employeesProperty().add(new Person("Hansolo", "Gerrit", "Grunwald", Positive));
+        biker.employeesProperty().add(new Person("Doc", "José", "Pereda", Happy));
+        biker.employeesProperty().add(new Person("Cosmonaut", "Sean", "Phillips", Positive));
+        biker.employeesProperty().add(new Person("CarlFX", "Carl", "Dea", Happy));
 
         people.add(docX);
         people.add(magneto);
