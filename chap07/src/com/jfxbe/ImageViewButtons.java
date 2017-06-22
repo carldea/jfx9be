@@ -10,6 +10,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Arc;
 import javafx.scene.shape.ArcType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,13 +24,13 @@ public class ImageViewButtons extends Pane {
     public enum ButtonMove {NEXT, PREV}
 
     /** List of ImageInfo instances. */
-    private List<ImageInfo> imageFiles;
+    private List<ImageInfo> imageFiles = new ArrayList<>();
 
     private Pane leftButton;
     private Pane rightButton;
 
     public ImageViewButtons(List<ImageInfo> imageFiles) {
-        imageFiles = imageFiles;
+        this.imageFiles = imageFiles;
 
         // create button panel
         Pane buttonStackPane = new StackPane();

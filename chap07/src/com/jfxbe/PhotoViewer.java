@@ -628,6 +628,7 @@ public class PhotoViewer extends Application {
                 db.getFiles().forEach( file -> {
                     try {
                         String url = file.toURI().toURL().toString();
+                        System.out.println("1" + url);
                         if (isValidImageFile(url)) {
                             buttonPanel.addImage(url);
                         }
