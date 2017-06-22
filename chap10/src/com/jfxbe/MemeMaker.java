@@ -5,7 +5,9 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Pos;
+import javafx.print.Printer;
 import javafx.print.PrinterJob;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.*;
@@ -16,7 +18,9 @@ import javafx.scene.input.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -67,7 +71,9 @@ public class MemeMaker extends Application {
     @Override
     public void init() {
 //        try {
-//            Font.getFamilies().forEach( font -> System.out.println(font.toString()));
+//            Font.getFamilies()
+//                .forEach( font ->
+//                  System.out.println(font.toString()));
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
@@ -117,8 +123,14 @@ public class MemeMaker extends Application {
 
         // Create the center content of the root pane (Border)
         // Make sure the center content is under the menu bar
-        BorderPane.setAlignment(mainContentPane, Pos.TOP_CENTER);
-        root.setCenter(mainContentPane);
+        BorderPane.setAlignment(mainContentPane, Pos.TOP_LEFT);
+        StackPane centerArea = new StackPane(mainContentPane);
+
+        // Red box denoting the print region
+        Node printRegion = generatePrintRegion();
+        centerArea.getChildren().add(printRegion);
+        StackPane.setAlignment(printRegion, Pos.TOP_LEFT);
+        root.setCenter(centerArea);
 
         // When nodes are visible they can be repositioned.
         primaryStage.setOnShown( event ->
@@ -127,9 +139,21 @@ public class MemeMaker extends Application {
         primaryStage.show();
     }
 
-
-    private MemeTextControl createCustomEditableText(Scene scene, int fontSize) {
-        return new MemeTextControl(scene, fontSize);
+    private Node generatePrintRegion() {
+        Path printPerimeter = new Path();
+        Printer printer = Printer.getDefaultPrinter();
+        double printWidth = printer.getDefaultPageLayout().getPrintableWidth();
+        double printHeight = printer.getDefaultPageLayout().getPrintableHeight();
+        PathElement[] corners = {
+                new MoveTo(0,0),
+                new LineTo(printWidth, 0),
+                new LineTo(printWidth, printHeight),
+                new LineTo(0, printHeight),
+                new ClosePath()
+        };
+        printPerimeter.getElements().addAll(corners);
+        printPerimeter.setStroke(Color.RED);
+        return printPerimeter;
     }
 
     private ImageView createImageView() {
@@ -198,7 +222,10 @@ public class MemeMaker extends Application {
         // create a meme text
         MenuItem addMemeTextItem = new MenuItem("Add Meme Text");
         addMemeTextItem.setOnAction( actionEvent -> {
-            memeContent.getChildren().add(createCustomEditableText(memeContent.getScene(), _fontSize));
+            MemeTextControl memeText = new MemeTextControl(
+                    memeContent.getScene(), _fontSize);
+            memeContent.getChildren()
+                       .add(memeText);
         });
         memeMenu.getItems().addAll(fontSizeMenu, addMemeTextItem);
 
@@ -265,21 +292,20 @@ public class MemeMaker extends Application {
         printMenuItem.setOnAction( actionEvent -> {
 
             PrinterJob job = PrinterJob.createPrinterJob();
+            job.jobStatusProperty().addListener(listener -> {
+                System.out.println("status " + job.getJobStatus());
+            });
             if (job != null &&
                     job.showPrintDialog(memeContent.getScene().getWindow())){
+                if (job.getJobStatus() == PrinterJob.JobStatus.NOT_STARTED) {
+                    System.out.println("canceled");
+                }
                 boolean success = job.printPage(memeContent);
                 if (success) {
                     job.endJob();
                     return;
                 }
             }
-
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error Printing");
-            alert.setHeaderText("Unable to print your Meme");
-            alert.setContentText("Default Printer is not available." +
-                    "\nGo to your computer's settings to configure.");
-            alert.show();
         });
     }
 
@@ -465,7 +491,6 @@ public class MemeMaker extends Application {
                     || (db.hasUrl()
                     && isValidImageFile(db.getUrl()))) {
 
-                LOGGER.log(Level.INFO, "url " + db.getUrl());
                 event.acceptTransferModes(TransferMode.LINK);
             } else {
                 event.consume();
@@ -476,21 +501,24 @@ public class MemeMaker extends Application {
         scene.setOnDragDropped((DragEvent event) -> {
             Dragboard db = event.getDragboard();
 
-            String url = null;
+            String file = null;
             // image from the local file system.
             if (db.hasFiles() && !db.hasUrl()) {
                 try {
-                    url = db.getFiles().get(0).toURI().toURL().toString();
-                } catch (MalformedURLException ex) {
-                    ex.printStackTrace();
+                    file = db.getFiles()
+                             .get(0)
+                             .toURI()
+                             .toURL()
+                             .toString();
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
                 }
             } else {
-                url = db.getUrl();
-                LOGGER.log(Level.FINE, "dropped url: "+ db.getUrl());
+                file = db.getUrl();
             }
-
-            if (isValidImageFile(url)) {
-                loadAndDisplayImage(progressIndicator, url);
+            LOGGER.log(Level.FINE, "dropped file: "+ file);
+            if (isValidImageFile(file)) {
+                loadAndDisplayImage(progressIndicator, file);
             }
 
             event.setDropCompleted(true);
