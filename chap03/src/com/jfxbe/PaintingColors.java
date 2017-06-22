@@ -4,8 +4,12 @@ import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.paint.*;
-import javafx.scene.shape.*;
+import javafx.scene.shape.Ellipse;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
+
+import java.util.function.Consumer;
 
 /**
  * Painting Colors
@@ -28,18 +32,18 @@ public class PaintingColors extends Application {
         
         // Red ellipse with radial gradient color
         Ellipse ellipse = new Ellipse(100, // center X
-                50 + 70/2, // center Y
-                50,        // radius X
-                70/2);     // radius Y
+                50 + 70/2, /* center Y */
+                50,        /* radius X */
+                70/2);     /* radius Y */
         RadialGradient gradient1 = new RadialGradient(
-                0,    // focusAngle
-                .1,   // focusDistance 
-                80,   // centerX 
-                45,   // centerY
-                120,  // radius 
-                false, // proportional
-                CycleMethod.NO_CYCLE, // cycleMethod 
-                new Stop(0, Color.RED), // stops 
+                0,      /* focusAngle */
+                .1,   /* focusDistance */
+                80,   /* centerX */
+                45,   /* centerY */
+                120,   /* radius */
+                false,      /* proportional */
+                CycleMethod.NO_CYCLE,  /* cycleMethod */
+                new Stop(0, Color.RED), /* stops */
                   new Stop(1, Color.BLACK) 
         );
 
@@ -69,13 +73,12 @@ public class PaintingColors extends Application {
         rectangle.setTranslateY(ellipseHeight + 10);
 
         LinearGradient linearGrad = new LinearGradient(
-                0,   // start X 
-                0,   // start Y
-                0,   // end X
-                1,   // end Y
-                true, // proportional
-                CycleMethod.NO_CYCLE, // cycle colors
-                // stops
+                0,   /* start X */
+                0,   /* start Y */
+                0,   /* end X */
+                1,   /* end Y */
+                true, /* proportional */
+                CycleMethod.NO_CYCLE, /* cycle colors stops */
                 new Stop(0.1f, Color.rgb(255, 200, 0, .784)),
                 new Stop(1.0f, Color.rgb(0, 0, 0, .784)));
         
@@ -94,12 +97,12 @@ public class PaintingColors extends Application {
                     rectangle.getHeight() + 10);
  
         LinearGradient cycleGrad = new LinearGradient(
-                50, // start X
-                50, // start Y
-                70, // end X
-                70, // end Y
-                false, // proportional
-                CycleMethod.REFLECT,  // cycleMethod 
+                50, /* start X */
+                50, /* start Y */
+                70, /* end X */
+                70, /* end Y */
+                false, /* proportional */
+                CycleMethod.REFLECT,  /* cycleMethod */
                 new Stop(0f, Color.rgb(0, 255, 0, .784)),
                 new Stop(1.0f, Color.rgb(0, 0, 0, .784))
         );
@@ -109,5 +112,6 @@ public class PaintingColors extends Application {
 
         primaryStage.setScene(scene);
         primaryStage.show();
+        Consumer<Integer> r = System.out::println;
     }
 }
