@@ -16,3 +16,7 @@ java -cp mlib/chap06.jar com.jfxbe.BossesAndEmployees
 java -cp mlib/chap06.jar com.jfxbe.BackgroundProcesses
 java -cp mlib/chap06.jar com.jfxbe.HeroPicker
 java -cp mlib/chap06.jar com.jfxbe.MenusExample
+java -cp mlib/chap06.jar com.jfxbe.CheckBoxDemo
+java -cp mlib/chap06.jar com.jfxbe.CustomFonts
+java -cp mlib/chap06.jar com.jfxbe.RadioButtonDemo
+

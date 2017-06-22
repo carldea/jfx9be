@@ -1,0 +1,22 @@
+apply plugin: 'java'
+//apply plugin: 'com.jfrog.bintray'
+
+dependencies {
+  runtime group: 'de.jensd', name: 'fontawesomefx-commons',             version: '8.12'
+  runtime group: 'de.jensd', name: 'fontawesomefx-fontawesome',         version: '4.6.3'
+  runtime group: 'de.jensd', name: 'fontawesomefx-materialdesignfont',  version: '1.6.50'
+  runtime group: 'de.jensd', name: 'fontawesomefx-materialicons',       version: '2.2.0'
+  runtime group: 'de.jensd', name: 'fontawesomefx-octicons',            version: '4.3.0'
+  runtime group: 'de.jensd', name: 'fontawesomefx-icons525',            version: '2.6.0'
+  runtime group: 'de.jensd', name: 'fontawesomefx-weathericons',        version: '2.0-3'
+}
+
+repositories { 
+  mavenCentral() 
+  jcenter()
+}
+
+task getDeps(type: Copy) {
+  from sourceSets.main.runtimeClasspath
+  into 'mlib/'
+}
