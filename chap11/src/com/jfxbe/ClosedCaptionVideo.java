@@ -19,7 +19,6 @@ import javafx.scene.media.*;
 import javafx.scene.media.MediaPlayer.Status;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
-import javafx.scene.text.Text;
 import javafx.stage.*;
 import javafx.util.Duration;
 
