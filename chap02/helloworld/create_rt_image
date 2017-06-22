@@ -1,1 +1,1 @@
-jlink --modulepath /Library/Java/JavaVirtualMachines/jdk-9.jdk/Contents/Home/jmods/:mlib --addmods com.jfxbe.helloworld --output dist --exclude-files *.diz -c on --strip-debug on --compress=2
+jlink --module-path $JAVA_HOME/jmods:mlib --add-modules com.jfxbe.helloworld --output dist --strip-debug --compress=2

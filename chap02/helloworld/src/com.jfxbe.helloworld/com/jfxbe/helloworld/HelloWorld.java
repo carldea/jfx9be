@@ -7,7 +7,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
-
+import com.sun.net.httpserver.*;
 /**
  * A JavaFX Hello World
  * @author carldea
@@ -18,6 +18,11 @@ public class HelloWorld extends Application {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+try{
+        HttpServer server = HttpServer.create();
+} catch (Throwable th) {
+   th.printStackTrace();
+}
         Application.launch(args);
     }
 
