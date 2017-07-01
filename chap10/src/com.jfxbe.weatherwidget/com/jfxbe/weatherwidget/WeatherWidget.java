@@ -108,7 +108,7 @@ public class WeatherWidget extends Application {
                                         .executeScript("window");
                         jsobj.setMember("WeatherWidget", this);
                         // default city's weather (a sunny place)
-                        queryWeatherByLocationAndUnit("Miami,FL", "c");
+                        queryWeatherByLocationAndUnit("Miami%20FL,US", "c");
                     }
                 });
 
